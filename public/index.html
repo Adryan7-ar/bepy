@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bepy - La Costa</title>
+  
+  <!-- Leaflet CSS para el Mapa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- FontAwesome para Íconos Modernos y Estilizados -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <style>
+    :root {
+      --bg-main: #e2f4f2;
+      --panel-bg: #ffffff;
+      --brand-blue: #54b2cc;
+      --text-dark: #2c4a52;
+      --tab-active: #e2f4f2;
+      --tab-border: #bce3e0;
+      --btn-green: #25d366;
+      --card-orange: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .app-canvas {
+      width: 100%;
+      max-width: 1200px;
+      background-color: #f4faf9;
+      border: 3px solid #b4dcd7;
+      border-radius: 24px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ==========================================================
+       CABECERA ULTRA-COMPACTA: ELIMINA EL AIRE (ZONA LÍNEAS ROJAS)
+       ========================================================== */
+    .app-header {
+      background: #f4faf9;
+      padding: 0 20px; /* Chau espacios de padding arriba y abajo */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid #e2f2f0;
+      position: relative;
+      min-height: 150px; /* Reducido drásticamente para ajustar el marco al nombre */
+      overflow: hidden;
+    }
+
+    .brand-center-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Ajuste con márgenes negativos para neutralizar la transparencia del archivo PNG */
+    .brand-logo-centered {
+      height: 230px; 
+      width: auto;
+      display: block;
+      margin-top: -35px;    /* Recorta el aire transparente superior */
+      margin-bottom: -35px; /* Recorta el aire transparente inferior */
+      filter: drop-shadow(0px 3px 10px rgba(0,0,0,0.06));
+    }
+
+    /* PESTAÑAS CON ÍCONOS MODERNOS */
+    .tabs-grid {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 20px;
+      background: #ffffff;
+      border-bottom: 2px solid #e2f2f0;
+    }
+
+    .tabs-grid::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .tab-item {
+      flex: 1;
+      min-width: 100px;
+      background: #ffffff;
+      border: 1px solid var(--tab-border);
+      border-radius: 12px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      color: #557077;
+      transition: all 0.2s ease;
+    }
+
+    .tab-item i {
+      font-size: 18px;
+      color: #7fa1aa;
+    }
+
+    .tab-item.active {
+      background-color: var(--tab-active);
+      border-color: var(--brand-blue);
+      color: var(--brand-blue);
+    }
+
+    .tab-item.active i {
+      color: var(--brand-blue);
+    }
+
+    /* INTERFAZ CENTRAL */
+    .app-body {
+      display: grid;
+      grid-template-columns: 1fr;
+      padding: 15px;
+      gap: 15px;
+      background: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .app-body {
+        grid-template-columns: 1fr 360px;
+      }
+    }
+
+    .map-frame {
+      border: 2px solid #cbdcd9;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #mapa-contenedor {
+      height: 500px;
+      width: 100%;
+      z-index: 1;
+    }
+
+    .map-filters {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 6px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 6px;
+    }
+
+    .map-filters select, .map-filters button {
+      padding: 6px 12px;
+      border: 1px solid #bce3e0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      background: white;
+      color: var(--text-dark);
+    }
+
+    .map-filters button {
+      background: var(--tab-active);
+      cursor: pointer;
+    }
+
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* TARJETAS PREMIUM */
+    .side-card {
+      background: #ffffff;
+      border: 2px solid #bce3e0;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .side-card.paseadores {
+      background: #fffcf4;
+      border-color: #fcd561;
+    }
+
+    .card-header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-profile-img {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--brand-blue);
+      background: #ffffff;
+    }
+
+    .card-avatar-fallback {
+      width: 46px;
+      height: 46px;
+      background: #e2f4f2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--brand-blue);
+      border: 2px solid #bce3e0;
+    }
+
+    .card-title-group h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--text-dark);
+    }
+
+    .card-title-group span {
+      font-size: 11px;
+      color: #7fa1aa;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .card-details p {
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      color: #557077;
+      line-height: 1.4;
+    }
+
+    .card-calc-box {
+      background: #f4faf9;
+      border: 1px dashed #9bcbc6;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .side-card.paseadores .card-calc-box {
+      background: #fffdf9;
+      border-color: #fcd561;
+    }
+
+    .card-calc-box label {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--text-dark);
+    }
+
+    .card-calc-box select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #9bcbc6;
+      font-size: 11px;
+    }
+
+    .calc-res {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--card-orange);
+    }
+
+    .wa-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      background: var(--btn-green);
+      color: white;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .app-footer {
+      background: #f4faf9;
+      padding: 10px;
+      text-align: center;
+      border-top: 2px solid #e2f2f0;
+      font-size: 11px;
+      font-weight: bold;
+      color: #54b2cc;
+    }
+
+    /* CONTENEDOR INTERNO CHATBOT GIGANTE */
+    .chatbot-fixed-container {
+      position: absolute !important;
+      bottom: 25px !important;
+      right: 25px !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-end !important;
+    }
+
+    .chatbot-bubble {
+      width: 95px !important;
+      height: 95px !important;
+      background-color: var(--brand-blue) !important;
+      border-radius: 50% !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: transform 0.2s ease !important;
+    }
+
+    .chatbot-bubble:hover {
+      transform: scale(1.06) !important;
+    }
+
+    .chatbot-bubble i {
+      color: white !important;
+      font-size: 44px !important; 
+    }
+
+    .chat-window {
+      width: 330px !important;
+      background: white !important;
+      border-radius: 18px !important;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.2) !important;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 2px solid #cbdcd9 !important;
+      margin-bottom: 15px !important;
+    }
+
+    .chat-header {
+      background: var(--brand-blue) !important;
+      color: white !important;
+      padding: 15px !important;
+      font-weight: bold !important;
+      font-size: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    .chat-body {
+      padding: 14px !important;
+      height: 220px !important;
+      overflow-y: auto !important;
+      font-size: 13.5px !important;
+      background: #f8fafc !important;
+    }
+
+    .chat-msg {
+      background: #e2f4f2 !important;
+      padding: 10px 14px !important;
+      border-radius: 14px !important;
+      margin-bottom: 12px !important;
+      color: var(--text-dark) !important;
+      line-height: 1.4 !important;
+    }
+
+    .chat-options {
+      padding: 12px !important;
+      background: white !important;
+      border-top: 1px solid #e2f2f0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+    }
+
+    .chat-opt-btn {
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      padding: 10px !important;
+      border-radius: 10px !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      text-align: left !important;
+      cursor: pointer !important;
+      color: var(--text-dark) !important;
+      transition: all 0.2s !important;
+    }
+
+    .chat-opt-btn:hover {
+      background: var(--tab-active) !important;
+      border-color: var(--brand-blue) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-canvas">
+    
+    <!-- BARRA SUPERIOR AJUSTADA AL EXTREMO (SQUASH EFFECT) -->
+    <header class="app-header">
+      <div class="brand-center-block">
+        <img src="logo-bepy.png" alt="Bepy" class="brand-logo-centered">
+      </div>
+    </header>
+
+    <!-- PESTAÑAS CON ÍCONOS MODERNOS -->
+    <nav class="tabs-grid">
+      <div class="tab-item active" onclick="cambiarCategoria('clinicas')">
+        <i class="fa-solid fa-user-doctor"></i>
+        <span>Clínicas</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('peluquerias')">
+        <i class="fa-solid fa-scissors"></i>
+        <span>Peluquerías</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('hospedajes')">
+        <i class="fa-solid fa-house-chimney-window"></i>
+        <span>Hospedajes</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('traslados')">
+        <i class="fa-solid fa-car-side"></i>
+        <span>Traslados</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('paseadores')">
+        <i class="fa-solid fa-dog"></i>
+        <span>Paseadores</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('adopciones')">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>Adopciones</span>
+      </div>
+      <div class="tab-item" onclick="cambiarCategoria('perdidos')">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Perdidos</span>
+      </div>
+    </nav>
+
+    <!-- FORMULARIO DE REGISTRO PARA PASEADORES -->
+    <div id="seccion-registro-paseador" style="display:none; padding:15px; background:#fffcf4; border-bottom:2px solid #fcd561;">
+      <h4 style="margin:0 0 10px 0; font-size:14px; color:var(--text-dark);"><i class="fa-solid fa-id-card"></i> Registro Rápido de Paseadores</h4>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
+        <input type="text" id="reg-nombre" placeholder="Nombre completo" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+        <select id="reg-localidad" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+          <option value="Santa Teresita">Santa Teresita</option>
+          <option value="Mar del Tuyú">Mar del Tuyú</option>
+          <option value="San Bernardo">San Bernardo</option>
+          <option value="Mar de Ajó">Mar de Ajó</option>
+        </select>
+        <input type="text" id="reg-zona" placeholder="Zona de paseos (ej: Plaza)" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+        <input type="number" id="reg-precio" placeholder="Precio por hora ($)" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+        <input type="text" id="reg-foto" placeholder="Link de Foto de Perfil (URL)" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+        <input type="text" id="reg-contacto" placeholder="WhatsApp (ej: 5492246...)" style="padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px;">
+      </div>
+      <textarea id="reg-desc" placeholder="Breve descripción de tu experiencia..." style="width:100%; margin-top:10px; padding:6px; border:1px solid #9bcbc6; border-radius:6px; font-size:12px; height:50px; resize:none;"></textarea>
+      <button onclick="guardarPaseadorFirebase()" style="margin-top:10px; background:var(--brand-blue); color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Publicar mi Perfil</button>
+    </div>
+
+    <!-- INTERFAZ CENTRAL -->
+    <main class="app-body">
+      <div class="map-frame">
+        <div id="mapa-contenedor"></div>
+        
+        <div class="map-filters">
+          <select id="filtro-localidad" onchange="aplicarFiltros()">
+            <option value="Todos">Todas las localidades</option>
+            <option value="Santa Teresita">Santa Teresita</option>
+            <option value="Mar del Tuyú">Mar del Tuyú</option>
+            <option value="San Bernardo">San Bernardo</option>
+            <option value="Mar de Ajó">Mar de Ajó</option>
+          </select>
+          <button onclick="obtenerUbicacionGPS()">📍 Mi GPS</button>
+        </div>
+      </div>
+
+      <div class="cards-stack" id="lista-tarjetas"></div>
+    </main>
+
+    <!-- BOTÓN DE AUTOMATIZACIÓN DE MAPS -->
+    <div style="background:#f1f5f9; padding:8px; text-align:center; border-top:1px solid #e2f2f0;">
+      <button onclick="inyectarVeterinariasEnFirebase()" style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">⚡ Sincronizar Google Maps con Firebase (Ejecutar 1 sola vez)</button>
+    </div>
+
+    <footer class="app-footer" id="status-texto">
+      ✓ bepy.com.ar • Sincronizado en Tiempo Real
+    </footer>
+
+    <!-- CHATBOT INTERNO CON ÍCONO DE PATITA -->
+    <div class="chatbot-fixed-container">
+      <div class="chat-window" id="chat-window">
+        <div class="chat-header"><i class="fa-solid fa-robot"></i> Asistente Bepy</div>
+        <div class="chat-body" id="chat-body">
+          <div class="chat-msg">¡Hola! Soy tu asistente de Bepy. ¿En qué te puedo ayudar hoy?</div>
+        </div>
+        <div class="chat-options">
+          <button class="chat-opt-btn" onclick="responderBot('turno')">🏥 Veterinarias de Turno</button>
+          <button class="chat-opt-btn" onclick="responderBot('campana')">📢 Campañas Informativas</button>
+          <button class="chat-opt-btn" onclick="responderBot('beneficios')">🎁 Beneficios Exclusivos</button>
+        </div>
+      </div>
+      <div class="chatbot-bubble" onclick="toggleChat()" title="Chatear con el Asistente">
+        <i class="fa-solid fa-paw"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const centrosLocalidades = {
+      "Todos": [-36.5416, -56.6974],
+      "Santa Teresita": [-36.5416, -56.6974],
+      "Mar del Tuyú": [-36.5746, -56.6961],
+      "San Bernardo": [-36.6874, -56.6912],
+      "Mar de Ajó": [-36.7214, -56.6836]
+    };
+
+    const mapa = L.map('mapa-contenedor').setView(centrosLocalidades["Todos"], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+
+    const bpaIcon = L.icon({
+      iconUrl: 'patita-bepy.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -12]
+    });
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoTDAAebxyRcg0-qneHLLYHC7IE-wI68Y",
+      authDomain: "bepy-salud-mascota.firebaseapp.com",
+      projectId: "bepy-salud-mascota",
+      storageBucket: "bepy-salud-mascota.firebasestorage.app",
+      messagingSenderId: "785057345675",
+      appId: "1:785057345675:web:573f735c47ff3m38eed28c",
+      measurementId: "G-QCXDQSDHML"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let categoriaActual = 'clinicas';
+    let datosGlobales = [];
+    let marcadoresActivos = [];
+    let usuarioLat = null;
+    let usuarioLon = null;
+    let unsubscribeActual = null;
+
+    const veteRealesGoogleMaps = [
+      { id: "vete_costa1", nombre: "Veterinaria San Bernardo", localidad: "San Bernardo", zona: "Chiozza 2200", descripcion: "Clínica médica, alimentos y accesorios en San Bernardo.", contacto: "542246460000" },
+      { id: "vete_costa2", nombre: "Clínica Veterinaria Santa Teresita", localidad: "Santa Teresita", zona: "Calle 3 y 37", descripcion: "Atención veterinaria integral, vacunas y urgencias.", contacto: "542246421111" },
+      { id: "vete_costa3", nombre: "Veterinaria Mar de Ajó", localidad: "Mar de Ajó", zona: "Av. San Martín 150", descripcion: "Consultas, farmacia canina y cirugías generales.", contacto: "542246442222" },
+      { id: "vete_costa4", nombre: "Veterinaria Mar del Tuyú", localidad: "Mar del Tuyú", zona: "Calle 2 y 64", descripcion: "Atención clínica general y peluquería canina.", contacto: "542246433333" }
+    ];
+
+    function cambiarCategoria(nuevaCategoria) {
+      categoriaActual = nuevaCategoria;
+      const panelReg = document.getElementById('seccion-registro-paseador');
+      if (nuevaCategoria === 'paseadores') {
+        panelReg.style.display = 'block';
+      } else {
+        panelReg.style.display = 'none';
+      }
+
+      document.querySelectorAll('.tab-item').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.getAttribute('onclick').includes(nuevaCategoria)) btn.classList.add('active');
+      });
+      conectarColeccionFirebase(nuevaCategoria);
+    }
+
+    function conectarColeccionFirebase(coleccion) {
+      if (unsubscribeActual) unsubscribeActual();
+      let backupDatos = [];
+      if (coleccion === "clinicas") {
+        backupDatos = veteRealesGoogleMaps;
+      } else if (coleccion === "paseadores") {
+        backupDatos.push({
+          id: "local_carlos", nombre: "Carlos", localidad: "Santa Teresita", zona: "Zona Costanera",
+          horarios: "Lunes a Viernes de 8 a 16 hs", precioHora: 1500, descripcion: "Paseador con experiencia certificada.", contacto: "5492246999999", foto: ""
+        });
+      } else {
+        backupDatos.push({
+          id: "local_demo", nombre: "Servicio Bepy La Costa", localidad: "Santa Teresita", zona: "Centro",
+          descripcion: "Registro de prueba activo.", contacto: "5492246000000", foto: ""
+        });
+      }
+
+      unsubscribeActual = db.collection(coleccion).onSnapshot((snapshot) => {
+        datosGlobales = [];
+        if (snapshot && !snapshot.empty) {
+          snapshot.forEach((doc) => { datosGlobales.push({ id: doc.id, ...doc.data() }); });
+          document.getElementById('status-texto').innerText = `✓ bepy.com.ar • Conectado (${datosGlobales.length} registros)`;
+        } else {
+          datosGlobales = backupDatos;
+          document.getElementById('status-texto').innerText = `✓ bepy.com.ar • Base Temporal Activa`;
+        }
+        aplicarFiltros();
+      }, (error) => {
+        datosGlobales = backupDatos;
+        aplicarFiltros();
+      });
+    }
+
+    function aplicarFiltros() {
+      const filtroLocalidad = document.getElementById('filtro-localidad').value;
+      marcadoresActivos.forEach(m => mapa.removeLayer(m));
+      marcadoresActivos = [];
+      const listaContenedor = document.getElementById('lista-tarjetas');
+      listaContenedor.innerHTML = '';
+
+      let datosFiltrados = datosGlobales.filter(item => {
+        if (filtroLocalidad === "Todos") return true;
+        const locItem = item.Localidad || item.localidad || "";
+        return locItem.toLowerCase().trim() === filtroLocalidad.toLowerCase().trim();
+      });
+
+      datosFiltrados.forEach(item => {
+        const nombre = item.nombre || "Registro Bepy";
+        const loc = item.Localidad || item.localidad || "La Costa";
+        const descripcion = item.descripcion || "Sin descripción.";
+        const telefono = item.contacto || item.telefono || "";
+        const zona = item.zona || "";
+        const urlFoto = item.foto || "";
+
+        const lat = centrosLocalidades[loc] ? centrosLocalidades[loc][0] : centrosLocalidades["Todos"][0];
+        const lon = centrosLocalidades[loc] ? centrosLocalidades[loc][1] : centrosLocalidades["Todos"][1];
+        
+        const marker = L.marker([lat, lon], { icon: bpaIcon }).addTo(mapa);
+        marker.bindPopup(`<b>${nombre}</b><br>📍 ${loc} ${zona ? `(${zona})` : ''}<br>${descripcion}`);
+        marcadoresActivos.push(marker);
+
+        let calcHtml = '';
+        if (categoriaActual === 'paseadores') {
+          const precioHora = Number(item.precioHora) || 0;
+          calcHtml = `
+            <div class="card-calc-box">
+              <label>Calcular Paseo:</label>
+              <select onchange="calcularCostoCard(this, ${precioHora}, '${item.id}')">
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+              </select>
+              <div class="calc-res" id="res-${item.id}">Total: $${precioHora}</div>
+            </div>
+          `;
+        }
+
+        let avatarHtml = `<div class="card-avatar-fallback">${nombre.charAt(0).toUpperCase()}</div>`;
+        if (urlFoto) {
+          avatarHtml = `<img src="${urlFoto}" alt="${nombre}" class="card-profile-img">`;
+        }
+
+        const tarjeta = document.createElement('div');
+        tarjeta.className = `side-card ${categoriaActual}`;
+        tarjeta.innerHTML = `
+          <div class="card-header-info">
+            ${avatarHtml}
+            <div class="card-title-group">
+              <h3>${nombre}</h3>
+              <span>📍 ${loc} ${zona ? `(${zona})` : ''}</span>
+            </div>
+          </div>
+          <div class="card-details">
+            <p>${descripcion}</p>
+            ${calcHtml}
+            ${telefono ? `<a href="https://wa.me/${telefono.replace(/\D/g, '')}" target="_blank" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>` : ''}
+          </div>
+        `;
+        listaContenedor.appendChild(tarjeta);
+      });
+
+      if (filtroLocalidad !== "Todos" && centrosLocalidades[filtroLocalidad]) {
+        mapa.setView(centrosLocalidades[filtroLocalidad], 13);
+      }
+    }
+
+    function inyectarVeterinariasEnFirebase() {
+      document.getElementById('status-texto').innerText = "Inyectando registros en la nube...";
+      let subidas = 0;
+      veteRealesGoogleMaps.forEach((vete) => {
+        db.collection("clinicas").doc(vete.id).set({
+          nombre: vete.nombre, localidad: vete.localidad, zona: vete.zona, descripcion: vete.descripcion, contacto: vete.contacto, foto: ""
+        }).then(() => {
+          subidas++;
+          if(subidas === veteRealesGoogleMaps.length) {
+            document.getElementById('status-texto').innerText = "✓ Sincronización Exitosa con Firebase";
+            cambiarCategoria('clinicas');
+          }
+        });
+      });
+    }
+
+    function guardarPaseadorFirebase() {
+      const nombre = document.getElementById('reg-nombre').value;
+      const localidad = document.getElementById('reg-localidad').value;
+      const zona = document.getElementById('reg-zona').value;
+      const precioHora = document.getElementById('reg-precio').value;
+      const foto = document.getElementById('reg-foto').value;
+      const contacto = document.getElementById('reg-contacto').value;
+      const descripcion = document.getElementById('reg-desc').value;
+
+      if (!nombre || !precioHora || !contacto) {
+        alert("Completa los campos principales para registrarte.");
+        return;
+      }
+
+      const idUnico = "paseador_" + Date.now();
+      db.collection("paseadores").doc(idUnico).set({
+        nombre: nombre, localidad: localidad, zona: zona, precioHora: Number(precioHora), foto: foto, contacto: contacto, descripcion: descripcion
+      }).then(() => {
+        alert("¡Tu perfil de paseador ha sido registrado!");
+        document.getElementById('reg-nombre').value = '';
+        document.getElementById('reg-zona').value = '';
+        document.getElementById('reg-precio').value = '';
+        document.getElementById('reg-foto').value = '';
+        document.getElementById('reg-contacto').value = '';
+        document.getElementById('reg-desc').value = '';
+        cambiarCategoria('paseadores');
+      });
+    }
+
+    function calcularCostoCard(select, precio, id) {
+      const h = Number(select.value);
+      document.getElementById(`res-${id}`).innerText = `Total: $${h * precio}`;
+    }
+
+    function obtenerUbicacionGPS() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition((pos) => {
+        usuarioLat = pos.coords.latitude;
+        usuarioLon = pos.coords.longitude;
+        L.circleMarker([usuarioLat, usuarioLon], { radius: 6, fillColor: "#54b2cc", color: "#fff", weight: 2 }).addTo(mapa);
+        mapa.setView([usuarioLat, usuarioLon], 14);
+        aplicarFiltros();
+      });
+    }
+
+    function toggleChat() {
+      const win = document.getElementById('chat-window');
+      win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function responderBot(opcion) {
+      const body = document.getElementById('chat-body');
+      let rta = "";
+      if (opcion === 'turno') rta = "🏥 <b>Veterinarias de Turno:</b> Las urgencias 24 hs se concentran en la zona centro de cada localidad esta semana. Podés ver las direcciones en la pestaña Clínicas.";
+      else if (opcion === 'campana') rta = "📢 <b>Campañas:</b> Próximamente iniciará la campaña anual de vacunación antirrábica gratuita en plazas de La Costa. ¡Te mantendremos al tanto!";
+      else if (opcion === 'beneficios') rta = "🎁 <b>Beneficios:</b> Al lanzar nuestra pasarela integrada vas a tener un 15% de descuento en el primer paseo de tu mascota.";
+
+      body.innerHTML += `<div class="chat-msg" style="background:#f1f5f9; text-align:right;">Interés en: ${opcion}</div>`;
+      setTimeout(() => {
+        body.innerHTML += `<div class="chat-msg">${rta}</div>`;
+        body.scrollTop = body.scrollHeight;
+      }, 400);
+    }
+
+    cambiarCategoria('clinicas');
+  </script>
+</body>
+</html>
