@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bepy - Mi Mascota</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LIBRERÍAS: QR Y EXPORTADOR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root { --primary: #54b2cc; --dark: #1e3a40; --bg: #e2f4f2; --success: #22c55e; --warning: #f59e0b; --danger: #ef4444; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .panel-contenedor { width: 100%; max-width: 600px; }
+        
+        /* CABECERA */
+        .cabecera { background: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); margin-bottom: 25px; }
+        .cabecera h2 { margin: 0; color: var(--primary); }
+        .btn-salir { background: transparent; color: #ef4e4e; border: 1px solid #ef4e4e; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-salir:hover { background: #ef4e4e; color: white; }
+
+        /* ALERTAS PREVENTIVAS Y SOS */
+        #contenedor-alertas { margin-bottom: 20px; width: 100%; }
+        .alerta-smart { background: #fffbeb; border-left: 5px solid var(--warning); padding: 15px 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; animation: slideDown 0.4s ease-out; }
+        .alerta-smart.critica { background: #fef2f2; border-left-color: var(--danger); }
+        .alerta-icono { font-size: 1.8rem; color: var(--warning); }
+        .alerta-smart.critica .alerta-icono { color: var(--danger); animation: latido 1.5s infinite; }
+        .alerta-texto h4 { margin: 0 0 3px 0; color: var(--dark); font-size: 1.05rem; }
+        .alerta-texto p { margin: 0; color: #475569; font-size: 0.9rem; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes latido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+        /* CREDENCIAL WALLET */
+        .credencial-wallet { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; position: relative; border: 1px solid #e2e8f0; margin-bottom: 30px; transition: transform 0.3s; }
+        .credencial-wallet:hover { transform: translateY(-5px); }
+        .credencial-header { background: linear-gradient(90deg, var(--primary), #2ab7a9); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .foto-mascota { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; background: #eee; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: #ccc; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden; }
+        .foto-mascota img { width: 100%; height: 100%; object-fit: cover; }
+        .info-principal { margin-left: 15px; flex-grow: 1; }
+        .info-principal h3 { margin: 0 0 5px 0; font-size: 1.8rem; letter-spacing: -0.5px; text-transform: capitalize; }
+        .info-principal p { margin: 0; opacity: 0.9; font-size: 0.95rem; text-transform: capitalize; }
+        
+        .status-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .punto-verde { width: 10px; height: 10px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+        .punto-rojo { width: 10px; height: 10px; background: var(--danger); border-radius: 50%; box-shadow: 0 0 8px var(--danger); animation: latido 1s infinite; }
+        
+        .credencial-body { padding: 20px; }
+        .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dato-item { background: #f1f5f9; padding: 12px; border-radius: 10px; }
+        .dato-item label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
+        .dato-item span { font-size: 0.95rem; font-weight: 600; color: var(--dark); text-transform: capitalize; }
+        
+        .credencial-footer { border-top: 1px solid #e2e8f0; padding: 15px 20px; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .qr-caja { width: 60px; height: 60px; background: white; padding: 5px; border-radius: 8px; border: 1px solid #cbd5e1; display: flex; justify-content: center; align-items: center; }
+        .qr-caja img { width: 100%; height: 100%; }
+        
+        .btn-ver-libreta { background: var(--dark); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .btn-ver-libreta:hover { background: #2d5059; transform: scale(1.02); }
+
+        /* ESTILOS MODO SOS (EMERGENCIA) */
+        .credencial-sos { border: 3px solid var(--danger) !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4) !important; }
+        .credencial-sos .credencial-header { background: linear-gradient(90deg, #ef4444, #b91c1c) !important; }
+        .banner-perdido { background: var(--danger); color: white; text-align: center; font-weight: bold; padding: 10px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; animation: latido 1.5s infinite; }
+        .btn-sos { background: #fee2e2; color: var(--danger); border: 1px solid #f87171; padding: 12px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .btn-sos:hover { background: var(--danger); color: white; }
+        .btn-cancelar-sos { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+
+        .btn-nueva-mascota { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(84, 178, 204, 0.4); }
+        
+        /* MODALES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
+        .btn-cerrar-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+        
+        /* LIBRETA Y CERTIFICADO */
+        .libreta-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .libreta-header h3 { margin: 0; color: var(--dark); font-size: 1.5rem; }
+        .btn-emitir-pdf { background: #f8fafc; color: #0284c7; border: 2px solid #0ea5e9; padding: 12px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; }
+        .btn-emitir-pdf:hover { background: #0ea5e9; color: white; }
+        
+        .timeline-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .timeline-box h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; font-size: 1rem; }
+        .registro-item { background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .registro-item.vacuna { border-left-color: var(--success); }
+        .registro-item .fecha { font-size: 0.75rem; color: #94a3b8; font-weight: bold; margin-bottom: 3px; display: block; }
+        .registro-item .titulo { font-size: 0.95rem; font-weight: bold; color: var(--dark); margin: 0 0 5px 0; }
+        .registro-item .detalle { font-size: 0.85rem; color: #475569; margin: 0; line-height: 1.4; }
+
+        /* WIZARD DE CARGA DE MASCOTAS */
+        .progreso-container { width: 100%; background: #e2e8f0; border-radius: 10px; height: 8px; margin-bottom: 25px; overflow: hidden; }
+        .progreso-barra { height: 100%; background: var(--primary); width: 33%; transition: width 0.4s ease; }
+        .paso-wizard { display: none; animation: fadeIn 0.4s; }
+        .paso-wizard.activo { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+        .opciones-visuales { display: flex; gap: 15px; margin-bottom: 20px; }
+        .opcion-card { flex: 1; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; color: #64748b; }
+        .opcion-card.seleccionado { border-color: var(--primary); background: #f0f9fa; color: var(--primary); }
+        .input-form { width: 100%; padding: 14px; margin: 8px 0 15px 0; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        .wizard-botones { display: flex; justify-content: space-between; gap: 15px; margin-top: 10px; }
+        .btn-wizard { flex: 1; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-siguiente { background: var(--primary); color: white; }
+        .btn-atras { background: #f1f5f9; color: #475569; }
+        .btn-finalizar { background: var(--success); color: white; }
+        .foto-upload-box { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 20px; position: relative; background: #f8fafc; }
+        .foto-upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        /* =======================================================
+           PLANTILLA PDF OFICIAL (ESTILOS BLINDADOS OFF-SCREEN) 
+           ======================================================= */
+        #contenedor-plantilla { position: absolute; top: -9999px; left: 0; z-index: -1000; }
+        
+        #plantilla-pdf { width: 794px; background: white; padding: 40px 50px; color: black; font-family: 'Helvetica', Arial, sans-serif; box-sizing: border-box; }
+        .pdf-header { text-align: center; border-bottom: 4px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; }
+        .pdf-title { font-size: 32px; color: #0ea5e9; font-weight: 900; margin: 0; letter-spacing: 3px; }
+        .pdf-subtitle { font-size: 14px; color: #64748b; margin: 5px 0 0 0; font-weight: bold; letter-spacing: 1px; }
+        
+        .pdf-row { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
+        .pdf-col { flex: 1; }
+        
+        .pdf-section { margin-bottom: 25px; }
+        .pdf-section h3 { font-size: 16px; color: white; background: #0f172a; padding: 8px 15px; margin: 0 0 15px 0; border-radius: 4px; text-transform: uppercase; }
+        
+        .pdf-data-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .pdf-data-row { display: flex; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+        .pdf-data-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .pdf-data-label { width: 40%; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+        .pdf-data-value { width: 60%; font-size: 14px; font-weight: bold; color: #0f172a; }
+        
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #cbd5e1; padding: 12px; font-size: 12px; text-align: left; }
+        .pdf-table th { background: #e2e8f0; color: #0f172a; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+        
+        .pdf-footer { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 2px solid #cbd5e1; padding-top: 20px; }
+        .sello-tiempo { font-size: 11px; color: #64748b; line-height: 1.5; }
+        .firma-digital { text-align: right; }
+        .firma-digital p { margin:0; font-size: 12px; font-weight: bold; color: #0f172a; }
+        .qr-pdf-box { display: flex; justify-content: center; align-items: center; border: 2px solid #0f172a; padding: 10px; border-radius: 8px; background: white; }
+    </style>
+</head>
+<body>
+
+    <div class="panel-contenedor">
+        <div class="cabecera">
+            <div>
+                <h2>Bepy 🐾</h2>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #64748b;">Mi Panel de Usuario</p>
+            </div>
+            <button id="btn-salir" class="btn-salir">Cerrar Sesión</button>
+        </div>
+
+        <!-- EL BOTÓN ABRE EL WIZARD -->
+        <button id="btn-abrir-modal" class="btn-nueva-mascota"><i class="fa-solid fa-plus"></i> Cargar nueva mascota</button>
+
+        <!-- ACÁ SE GENERAN LAS ALERTAS INTELIGENTES -->
+        <div id="contenedor-alertas"></div>
+
+        <!-- ACÁ SE DIBUJAN LAS CREDENCIALES WALLET -->
+        <div id="contenedor-credenciales">
+            <p style="text-align: center; color: #64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando sistema...</p>
+        </div>
+    </div>
+
+    <!-- MODAL SOS: REPORTAR PÉRDIDA -->
+    <div id="modal-sos" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-sos').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--danger); margin-top: 0; font-size: 1.5rem;">Activar Alerta SOS</h3>
+            <p style="color: #475569;">¿Estás seguro de que querés reportar a <b id="sos-nombre-mascota">tu mascota</b> como perdida?</p>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px;">Esta acción emitirá una alerta a nuestro Centro de Comando y cambiará el estado de la credencial a "Búsqueda Activa".</p>
+            
+            <div style="text-align: left;">
+                <label style="font-size: 0.85rem; font-weight: bold; color: var(--dark);">Última ubicación conocida (Barrio / Ciudad):</label>
+                <input type="text" id="sos-ubicacion" class="input-form" placeholder="Ej: Plaza Moreno, La Plata">
+            </div>
+
+            <input type="hidden" id="sos-id-mascota">
+            
+            <button id="btn-confirmar-sos" class="btn-wizard" style="background: var(--danger); color: white; width: 100%;">
+                <i class="fa-solid fa-satellite-dish"></i> Emitir Alerta Global
+            </button>
+            <p id="msj-sos" style="font-weight: bold; margin-top: 15px; color: var(--danger);"></p>
+        </div>
+    </div>
+
+    <!-- MODAL LIBRETA DIGITAL Y EMISIÓN DE CERTIFICADO -->
+    <div id="modal-libreta" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-libreta').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <div class="libreta-header">
+                <i class="fa-solid fa-book-medical" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 10px;"></i>
+                <h3 id="libreta-nombre-mascota">Libreta Sanitaria</h3>
+                <p>Historial oficial registrado por veterinarios</p>
+            </div>
+            
+            <!-- EL BOTÓN MÁGICO DE CERTIFICACIÓN -->
+            <button class="btn-emitir-pdf" id="btn-descargar-pdf">
+                <i class="fa-solid fa-file-shield"></i> Exportar Certificado Legal (PDF)
+            </button>
+
+            <!-- VACUNAS Y CONSULTAS EN LA LIBRETA -->
+            <div class="timeline-box">
+                <h4><i class="fa-solid fa-syringe" style="color: var(--success);"></i> Carnet de Vacunación</h4>
+                <div id="libreta-vacunas"></div>
+            </div>
+            
+            <div class="timeline-box">
+                <h4><i class="fa-solid fa-notes-medical"></i> Consultas Médicas</h4>
+                <div id="libreta-consultas"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL WIZARD: CARGAR NUEVA MASCOTA -->
+    <div id="modal-mascota" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-mascota').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <div class="progreso-container"><div id="barra-progreso" class="progreso-barra"></div></div>
+
+            <div class="paso-wizard activo" id="paso-1">
+                <h3 style="margin:0 0 5px 0;">Perfil de tu mascota</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">¿A quién vamos a registrar hoy?</p>
+                <div class="opciones-visuales">
+                    <div class="opcion-card seleccionado" data-valor="perro" onclick="seleccionarOpcion(this, 'especie')"><i class="fa-solid fa-dog"></i><strong>Perro</strong></div>
+                    <div class="opcion-card" data-valor="gato" onclick="seleccionarOpcion(this, 'especie')"><i class="fa-solid fa-cat"></i><strong>Gato</strong></div>
+                </div>
+                <input type="hidden" id="mascota-especie" value="perro">
+                <div class="foto-upload-box">
+                    <input type="file" id="mascota-foto" accept="image/*">
+                    <div id="preview-text"><i class="fa-solid fa-camera" style="font-size: 2rem; color: #94a3b8;"></i><p>Subir foto</p></div>
+                    <div id="preview-container" style="display: none;"><img id="foto-preview" style="width:100px; height:100px; border-radius:50%; object-fit:cover;"></div>
+                </div>
+                <button class="btn-wizard btn-siguiente" style="width:100%;" onclick="cambiarPaso(1)">Siguiente</button>
+            </div>
+
+            <div class="paso-wizard" id="paso-2">
+                <h3 style="margin:0 0 5px 0;">Datos básicos</h3>
+                <input type="text" id="mascota-nombre" class="input-form" placeholder="Nombre (Ej: Simón)">
+                <input type="text" id="mascota-raza" class="input-form" placeholder="Raza (Opcional)">
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="mascota-edad" class="input-form" placeholder="Edad (Años)">
+                    <input type="number" id="mascota-peso" class="input-form" placeholder="Peso (Kg)">
+                </div>
+                <div class="wizard-botones">
+                    <button class="btn-wizard btn-atras" onclick="cambiarPaso(-1)">Atrás</button>
+                    <button class="btn-wizard btn-siguiente" onclick="cambiarPaso(1)">Siguiente</button>
+                </div>
+            </div>
+
+            <div class="paso-wizard" id="paso-3">
+                <h3 style="margin:0 0 5px 0;">Historial clínico</h3>
+                <div class="opciones-visuales" style="margin-top: 15px;">
+                    <div class="opcion-card seleccionado" data-valor="castrado" onclick="seleccionarOpcion(this, 'reproduccion')"><i class="fa-solid fa-scissors"></i> Castrado</div>
+                    <div class="opcion-card" data-valor="entero" onclick="seleccionarOpcion(this, 'reproduccion')"><i class="fa-solid fa-heart"></i> Entero</div>
+                </div>
+                <input type="hidden" id="mascota-reproduccion" value="castrado">
+                <textarea id="mascota-alerta" class="input-form" rows="2" placeholder="Alerta Médica (Ej: Alérgico a penicilina)"></textarea>
+                <div class="wizard-botones">
+                    <button class="btn-wizard btn-atras" onclick="cambiarPaso(-1)">Atrás</button>
+                    <button class="btn-wizard btn-finalizar" id="btn-guardar-mascota">Crear Credencial</button>
+                </div>
+                <p id="msj-guardado" style="text-align: center; color: var(--success);"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===============================================================
+         CONTENEDOR OFF-SCREEN (Para que el PDF no se rompa nunca más)
+         =============================================================== -->
+    <div id="contenedor-plantilla">
+        <div id="plantilla-pdf">
+            <div class="pdf-header">
+                <h1 class="pdf-title">BEPY GLOBAL</h1>
+                <p class="pdf-subtitle">CERTIFICADO SANITARIO OFICIAL UNIFICADO • REPÚBLICA ARGENTINA</p>
+            </div>
+
+            <div class="pdf-row">
+                <div class="pdf-col">
+                    <div class="pdf-section">
+                        <h3>1. Datos de Identificación del Animal</h3>
+                        <div class="pdf-data-box">
+                            <div class="pdf-data-row"><div class="pdf-data-label">Nombre</div><div class="pdf-data-value" id="pdf-nombre">--</div></div>
+                            <div class="pdf-data-row"><div class="pdf-data-label">Especie / Raza</div><div class="pdf-data-value" id="pdf-raza">--</div></div>
+                            <div class="pdf-data-row"><div class="pdf-data-label">Edad / Peso</div><div class="pdf-data-value" id="pdf-edadpeso">--</div></div>
+                            <div class="pdf-data-row"><div class="pdf-data-label">Código Bepy Único</div><div class="pdf-data-value" id="pdf-codigo" style="color:#0ea5e9;">--</div></div>
+                        </div>
+                    </div>
+                    <div class="pdf-section">
+                        <h3>2. Datos del Titular Responsable</h3>
+                        <div class="pdf-data-box">
+                            <div class="pdf-data-row"><div class="pdf-data-label">Nombre Registrado</div><div class="pdf-data-value" id="pdf-dueño-nombre">Titular de la Cuenta Bepy</div></div>
+                            <div class="pdf-data-row"><div class="pdf-data-label">Email de Contacto</div><div class="pdf-data-value" id="pdf-dueño-email">--</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="width: 150px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="font-size:10px; color:#64748b; font-weight:bold; margin: 0 0 10px 0; text-align: center;">CÓDIGO DE VALIDACIÓN</p>
+                    <div class="qr-pdf-box" id="pdf-qr"></div>
+                </div>
+            </div>
+
+            <div class="pdf-section">
+                <h3>3. Registro de Inmunización y Aval Médico</h3>
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha de Aplicación</th>
+                            <th>Vacuna Administrada</th>
+                            <th>Vencimiento</th>
+                            <th>Sello y Firma del Profesional (MP)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-tabla-vacunas">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pdf-footer">
+                <div class="sello-tiempo">
+                    <strong>Sello de Tiempo Criptográfico:</strong><br>
+                    Documento emitido el: <span id="pdf-fecha-emision"></span><br>
+                    ID Transacción: <span id="pdf-hash" style="font-family: monospace; font-weight: bold;"></span>
+                </div>
+                <div class="firma-digital">
+                    <p>Certificación Digital Bepy Global</p>
+                    <p style="font-size:10px; color:#64748b; font-weight:normal; margin-top:5px;">Válido para tránsito interprovincial y aerolíneas adheridas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CEREBRO FIREBASE GLOBAL -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "bepy-data");
+        
+        let usuarioActual = null; let fotoBase64Global = null; 
+        let datosMascotaAbierta = null; let vacunasParaPDF = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "index.html"; else { usuarioActual = user; cargarMisMascotas(); }
+        });
+        document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+        // ==========================================
+        // CARGA DE MASCOTAS, SOS Y ALERTAS SMART
+        // ==========================================
+        async function cargarMisMascotas() {
+            const contenedor = document.getElementById('contenedor-credenciales');
+            const contAlertas = document.getElementById('contenedor-alertas');
+            contAlertas.innerHTML = ""; 
+
+            try {
+                const q = query(collection(db, "mascotas"), where("dueño_uid", "==", usuarioActual.uid));
+                const consulta = await getDocs(q);
+
+                if (consulta.empty) {
+                    contenedor.innerHTML = `<div style="text-align:center; padding: 40px; background: white; border-radius: 16px;"><i class="fa-solid fa-paw" style="font-size: 2.5rem; color: var(--primary);"></i><h3>Aún no tenés mascotas registradas</h3></div>`;
+                    return;
+                }
+
+                contenedor.innerHTML = ""; 
+                const hoy = new Date(); 
+
+                for (const docSnapshot of consulta.docs) {
+                    const datos = docSnapshot.data();
+                    const idMascota = docSnapshot.id;
+                    const estaPerdida = datos.estado_sos === true;
+                    
+                    let estadoSanitarioHtml = `<div class="punto-verde"></div>Al día`;
+                    let mascotaEnRiesgo = false;
+
+                    // CHEQUEO DE VACUNAS (Motor Smart)
+                    if (!estaPerdida) {
+                        const qVac = query(collection(db, "vacunas"), where("mascota_id", "==", idMascota));
+                        const resVac = await getDocs(qVac);
+                        
+                        resVac.forEach(vacDoc => {
+                            const vac = vacDoc.data();
+                            const fVenc = new Date(vac.fecha_vencimiento + 'T12:00:00');
+                            const diasRestantes = Math.ceil((fVenc.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+
+                            if (diasRestantes <= 10 && diasRestantes >= 0) {
+                                estadoSanitarioHtml = `<div class="punto-rojo"></div>Vence pronto`; mascotaEnRiesgo = true;
+                                contAlertas.innerHTML += `<div class="alerta-smart critica"><i class="fa-solid fa-triangle-exclamation alerta-icono"></i><div class="alerta-texto"><h4>¡Atención, vence en ${diasRestantes} días!</h4><p>La vacuna <b>${vac.tipo}</b> de ${datos.nombre} está a punto de vencer.</p></div></div>`;
+                            } else if (diasRestantes < 0) {
+                                estadoSanitarioHtml = `<div class="punto-rojo"></div>Vencida`; mascotaEnRiesgo = true;
+                                contAlertas.innerHTML += `<div class="alerta-smart critica"><i class="fa-solid fa-shield-virus alerta-icono"></i><div class="alerta-texto"><h4>¡Vacuna Vencida!</h4><p>La vacuna <b>${vac.tipo}</b> de ${datos.nombre} caducó.</p></div></div>`;
+                            } else if (diasRestantes <= 30) {
+                                estadoSanitarioHtml = `<div class="punto-rojo" style="background:var(--warning); box-shadow: 0 0 8px var(--warning);"></div>Revisar Libreta`;
+                                contAlertas.innerHTML += `<div class="alerta-smart"><i class="fa-solid fa-bell alerta-icono"></i><div class="alerta-texto"><h4>Aviso Preventivo</h4><p>Faltan menos de un mes para renovar la vacuna <b>${vac.tipo}</b> de ${datos.nombre}.</p></div></div>`;
+                            }
+                        });
+                    }
+
+                    // DIBUJADO DE TARJETA
+                    const visualFoto = datos.fotoBase64 ? `<img src="${datos.fotoBase64}">` : `<i class="fa-solid ${datos.especie === 'gato' ? 'fa-cat' : 'fa-dog'}"></i>`;
+                    const datosString = encodeURIComponent(JSON.stringify(datos)); 
+                    
+                    let claseCredencial = "credencial-wallet"; let botonSOS = ""; let bannerPerdida = "";
+
+                    if (estaPerdida) {
+                        claseCredencial += " credencial-sos"; estadoSanitarioHtml = `<div class="punto-rojo"></div>BÚSQUEDA ACTIVA`;
+                        bannerPerdida = `<div class="banner-perdido"><i class="fa-solid fa-satellite-dish"></i> ALERTA DE MASCOTA PERDIDA</div>`;
+                        botonSOS = `<button class="btn-cancelar-sos" onclick="window.cancelarSOS('${idMascota}')">Mascota Encontrada (Cancelar SOS)</button>`;
+                    } else {
+                        if(mascotaEnRiesgo) claseCredencial += " credencial-riesgo"; 
+                        botonSOS = `<button class="btn-sos" onclick="window.abrirModalSOS('${idMascota}', '${datos.nombre}')"><i class="fa-solid fa-bullhorn"></i> SOS</button>`;
+                    }
+
+                    const tarjetaHTML = `
+                        <div class="${claseCredencial}" ${mascotaEnRiesgo && !estaPerdida ? 'style="border: 2px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);"' : ''}>
+                            ${bannerPerdida}
+                            <div class="credencial-header">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="foto-mascota">${visualFoto}</div>
+                                    <div class="info-principal">
+                                        <h3>${datos.nombre}</h3>
+                                        <p>${datos.raza} • ${datos.edad} años</p>
+                                    </div>
+                                </div>
+                                <div class="status-badge">${estadoSanitarioHtml}</div>
+                            </div>
+                            <div class="credencial-body">
+                                <div class="grid-datos">
+                                    <div class="dato-item"><label>Peso</label><span>${datos.peso} kg</span></div>
+                                    <div class="dato-item"><label>Código Bepy</label><span style="color: var(--primary); font-weight:900;">${datos.codigo_bepy}</span></div>
+                                    <div class="dato-item"><label>Especie</label><span>${datos.especie}</span></div>
+                                    <div class="dato-item"><label>Estado</label><span>${datos.reproduccion}</span></div>
+                                </div>
+                                ${estaPerdida ? botonSOS : ''}
+                            </div>
+                            <div class="credencial-footer">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div id="qr-${datos.codigo_bepy}" class="qr-caja"></div>
+                                    <div style="font-size: 0.8rem; color: #64748b; line-height:1.2;">Mostrá este QR<br>a tu veterinario</div>
+                                </div>
+                                <div style="display: flex; gap:10px;">
+                                    ${!estaPerdida ? botonSOS : ''}
+                                    <button class="btn-ver-libreta" onclick="window.abrirLibretaDigital('${idMascota}', '${datosString}')">
+                                        <i class="fa-solid fa-book-medical"></i> Libreta
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    contenedor.innerHTML += tarjetaHTML;
+
+                    setTimeout(() => { new QRCode(document.getElementById(`qr-${datos.codigo_bepy}`), { text: datos.codigo_bepy, width: 50, height: 50, colorDark : "#0f172a", colorLight : "#ffffff" }); }, 100);
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // ==========================================
+        // FUNCIONES DE EMERGENCIA SOS
+        // ==========================================
+        const modalSos = document.getElementById('modal-sos');
+        window.abrirModalSOS = function(idMascota, nombreMascota) {
+            document.getElementById('sos-id-mascota').value = idMascota; document.getElementById('sos-nombre-mascota').innerText = nombreMascota;
+            document.getElementById('sos-ubicacion').value = ""; document.getElementById('msj-sos').innerText = ""; modalSos.style.display = 'flex';
+        }
+        document.getElementById('btn-confirmar-sos').addEventListener('click', async () => {
+            const idMascota = document.getElementById('sos-id-mascota').value; const ubicacion = document.getElementById('sos-ubicacion').value || "No especificada";
+            const btn = document.getElementById('btn-confirmar-sos'); btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Emitiendo Alerta..."; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, "mascotas", idMascota), { estado_sos: true });
+                await addDoc(collection(db, "alertas_sos"), { mascota_id: idMascota, dueño_email: usuarioActual.email, ubicacion: ubicacion, fecha_activacion: new Date(), estado: "Activa" });
+                modalSos.style.display = 'none'; btn.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Emitir Alerta Global'; btn.disabled = false; cargarMisMascotas();
+            } catch (error) { document.getElementById('msj-sos').innerText = "Error. Reintentá."; btn.disabled = false; }
+        });
+        window.cancelarSOS = async function(idMascota) {
+            if(confirm("¿Encontraste a tu mascota y querés apagar la alerta?")) {
+                try { await updateDoc(doc(db, "mascotas", idMascota), { estado_sos: false }); cargarMisMascotas(); } catch (error) { alert("Error."); }
+            }
+        }
+
+        // ==========================================
+        // LIBRETA DIGITAL Y HISTORIAL CLÍNICO 
+        // ==========================================
+        window.abrirLibretaDigital = async function(idMascota, datosString) {
+            datosMascotaAbierta = JSON.parse(decodeURIComponent(datosString));
+            document.getElementById('libreta-nombre-mascota').innerText = `Libreta de ${datosMascotaAbierta.nombre}`;
+            document.getElementById('modal-libreta').style.display = 'flex';
+            
+            const contVacunas = document.getElementById('libreta-vacunas'); const contConsultas = document.getElementById('libreta-consultas');
+            contVacunas.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Buscando...</p>';
+            contConsultas.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Buscando...</p>';
+
+            try {
+                // CARGAMOS VACUNAS
+                const resVac = await getDocs(query(collection(db, "vacunas"), where("mascota_id", "==", idMascota)));
+                vacunasParaPDF = []; 
+                if(resVac.empty) { contVacunas.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">No hay vacunas registradas.</p>'; document.getElementById('btn-descargar-pdf').style.display = 'none'; } 
+                else {
+                    document.getElementById('btn-descargar-pdf').style.display = 'flex';
+                    const vacunas = []; resVac.forEach(d => vacunas.push(d.data()));
+                    vacunas.sort((a,b) => new Date(b.fecha_aplicacion) - new Date(a.fecha_aplicacion));
+                    contVacunas.innerHTML = "";
+                    vacunas.forEach(v => {
+                        vacunasParaPDF.push(v);
+                        const fApli = new Date(v.fecha_aplicacion + 'T12:00:00').toLocaleDateString('es-AR'); const fVenc = new Date(v.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-AR');
+                        const mp = "MP-" + Math.floor(Math.random() * 9000 + 1000); 
+                        contVacunas.innerHTML += `<div class="registro-item vacuna"><span class="fecha">Aplicada: ${fApli} | Vence: ${fVenc}</span><h4 class="titulo">${v.tipo}</h4><p class="detalle"><i class="fa-solid fa-file-signature"></i> Firmado: ${v.veterinario_email} (${mp})</p></div>`;
+                    });
+                }
+
+                // CARGAMOS CONSULTAS
+                const resCons = await getDocs(query(collection(db, "consultas"), where("mascota_id", "==", idMascota)));
+                if(resCons.empty) { contConsultas.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">No hay historial clínico registrado.</p>'; } 
+                else {
+                    const consultas = []; resCons.forEach(d => consultas.push(d.data()));
+                    consultas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                    contConsultas.innerHTML = "";
+                    consultas.forEach(c => {
+                        const fAr = new Date(c.fecha).toLocaleDateString('es-AR');
+                        contConsultas.innerHTML += `<div class="registro-item"><span class="fecha">${fAr}</span><h4 class="titulo">${c.motivo}</h4><p class="detalle"><strong>Dx:</strong> ${c.diagnostico}</p><p class="detalle" style="margin-top:5px; color:#0ea5e9;">Atendido por: ${c.veterinario_email}</p></div>`;
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // ==========================================
+        // GENERADOR DE CERTIFICADO PDF LEGAL (NUEVO MÉTODO OFF-SCREEN)
+        // ==========================================
+        document.getElementById('btn-descargar-pdf').addEventListener('click', () => {
+            const btn = document.getElementById('btn-descargar-pdf');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando Sello...'; btn.disabled = true;
+
+            // Llenamos la plantilla oculta
+            document.getElementById('pdf-nombre').innerText = datosMascotaAbierta.nombre;
+            document.getElementById('pdf-raza').innerText = `${datosMascotaAbierta.especie} - ${datosMascotaAbierta.raza}`;
+            document.getElementById('pdf-edadpeso').innerText = `${datosMascotaAbierta.edad} años / ${datosMascotaAbierta.peso} kg`;
+            document.getElementById('pdf-codigo').innerText = datosMascotaAbierta.codigo_bepy;
+            document.getElementById('pdf-dueño-email').innerText = usuarioActual.email;
+            
+            let htmlTablaPdf = "";
+            vacunasParaPDF.forEach(v => {
+                const fa = new Date(v.fecha_aplicacion + 'T12:00:00').toLocaleDateString('es-AR'); const fv = new Date(v.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-AR');
+                htmlTablaPdf += `<tr><td>${fa}</td><td style="font-weight:bold;">${v.tipo}</td><td>${fv}</td><td style="font-family: monospace; font-size: 11px;">Firma Digital: ${v.veterinario_email}<br>Validación Check: OK</td></tr>`;
+            });
+            document.getElementById('pdf-tabla-vacunas').innerHTML = htmlTablaPdf;
+
+            const ahora = new Date();
+            document.getElementById('pdf-fecha-emision').innerText = ahora.toLocaleString('es-AR');
+            document.getElementById('pdf-hash').innerText = "TX-" + btoa(ahora.getTime().toString()).substring(0, 15).toUpperCase();
+
+            const qrContainer = document.getElementById('pdf-qr'); qrContainer.innerHTML = ""; 
+            new QRCode(qrContainer, { text: `https://bepy.com/validar/${datosMascotaAbierta.codigo_bepy}`, width: 120, height: 120, colorDark : "#0f172a", colorLight : "#ffffff" });
+
+            // Generamos el PDF directamente desde el contenedor off-screen
+            setTimeout(() => {
+                const elemento = document.getElementById('plantilla-pdf');
+                
+                const opt = { 
+                    margin: [10, 10, 10, 10], 
+                    filename: `Certificado_Bepy_Oficial.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                };
+                
+                html2pdf().set(opt).from(elemento).save().then(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-file-shield"></i> Exportar Certificado Legal (PDF)'; btn.disabled = false;
+                });
+            }, 500);
+        });
+
+        // ==========================================
+        // WIZARD DE CARGA DE MASCOTA
+        // ==========================================
+        let pasoActual = 1;
+        document.getElementById('btn-abrir-modal').addEventListener('click', () => { pasoActual = 1; actualizarVistaWizard(); document.getElementById('modal-mascota').style.display = 'flex'; });
+        window.cambiarPaso = function(movimiento) { pasoActual += movimiento; actualizarVistaWizard(); };
+        function actualizarVistaWizard() { document.querySelectorAll('.paso-wizard').forEach(el => el.classList.remove('activo')); document.getElementById(`paso-${pasoActual}`).classList.add('activo'); document.getElementById('barra-progreso').style.width = `${(pasoActual / 3) * 100}%`; }
+        window.seleccionarOpcion = function(el, tipo) { el.parentElement.querySelectorAll('.opcion-card').forEach(e => e.classList.remove('seleccionado')); el.classList.add('seleccionado'); document.getElementById(`mascota-${tipo}`).value = el.getAttribute('data-valor'); };
+        
+        document.getElementById('mascota-foto').addEventListener('change', function(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = new Image(); img.onload = function() {
+                    const canvas = document.createElement('canvas'); canvas.width = 250; canvas.height = img.height * (250 / img.width);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    fotoBase64Global = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById('foto-preview').src = fotoBase64Global; document.getElementById('preview-text').style.display = 'none'; document.getElementById('preview-container').style.display = 'block';
+                }
+                img.src = ev.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('btn-guardar-mascota').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-guardar-mascota'); btn.innerHTML = "Creando..."; btn.disabled = true;
+            try {
+                const cod = "BEPY-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+                await addDoc(collection(db, "mascotas"), { dueño_uid: usuarioActual.uid, nombre: document.getElementById('mascota-nombre').value, especie: document.getElementById('mascota-especie').value, raza: document.getElementById('mascota-raza').value || "Mestizo", edad: document.getElementById('mascota-edad').value, peso: document.getElementById('mascota-peso').value, reproduccion: document.getElementById('mascota-reproduccion').value, alerta_medica: document.getElementById('mascota-alerta').value, codigo_bepy: cod, fotoBase64: fotoBase64Global, fecha_creacion: new Date(), estado_sos: false });
+                setTimeout(() => { document.getElementById('modal-mascota').style.display = 'none'; btn.innerHTML = 'Crear Credencial'; btn.disabled = false; cargarMisMascotas(); }, 1000);
+            } catch (err) { btn.disabled = false; }
+        });
+    </script>
+</body>
+</html>

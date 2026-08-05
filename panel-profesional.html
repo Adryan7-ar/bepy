@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bepy - Panel Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0ea5e9; --dark: #0f172a; --bg: #f8fafc; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --med: #6366f1; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .panel-contenedor { width: 100%; max-width: 850px; }
+        
+        /* CABECERA */
+        .cabecera { background: white; padding: 20px 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); margin-bottom: 25px; }
+        .cabecera h2 { margin: 0; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .btn-salir { background: transparent; color: #64748b; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-salir:hover { background: #f1f5f9; color: var(--danger); border-color: var(--danger); }
+
+        /* BUSCADOR */
+        .buscador-box { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1); margin-bottom: 30px; text-align: center; }
+        .buscador-box h3 { margin-top: 0; color: var(--dark); font-size: 1.5rem; }
+        .buscador-box p { color: #64748b; margin-bottom: 25px; }
+        .input-group { display: flex; gap: 10px; max-width: 500px; margin: 0 auto; }
+        .input-buscar { flex: 1; padding: 15px 20px; font-size: 1.2rem; border: 2px solid #e2e8f0; border-radius: 12px; outline: none; transition: 0.3s; text-transform: uppercase; font-weight: bold; color: var(--primary); letter-spacing: 1px; }
+        .input-buscar:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+        .btn-buscar { background: var(--primary); color: white; border: none; padding: 0 25px; border-radius: 12px; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .btn-buscar:hover { transform: translateY(-2px); background: #0284c7; }
+
+        /* FICHA CLÍNICA */
+        #resultado-clinico { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ficha-medica { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+        .ficha-header { background: #f8fafc; padding: 25px 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        
+        .paciente-info { display: flex; align-items: center; gap: 20px; }
+        .foto-paciente { width: 100px; height: 100px; border-radius: 50%; background: #e2e8f0; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: cover; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: #94a3b8; }
+        
+        .datos-principales h2 { margin: 0 0 5px 0; font-size: 2.2rem; text-transform: capitalize; letter-spacing: -1px; }
+        .datos-principales p { margin: 0; color: #64748b; font-size: 1.1rem; text-transform: capitalize; }
+        
+        .alerta-critica { background: #fef2f2; border-left: 5px solid var(--danger); padding: 15px 20px; margin: 20px 30px 0 30px; border-radius: 8px; display: flex; align-items: center; gap: 15px; color: #7f1d1d; }
+        
+        .ficha-body { padding: 20px 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* SECCIONES Y LISTAS */
+        .seccion-titulo { font-size: 1.1rem; color: var(--dark); font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .lista-datos { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        
+        /* Item Vacuna */
+        .vacuna-item { background: white; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .vacuna-item h4 { margin: 0 0 5px 0; color: var(--dark); font-size: 0.95rem; }
+        .vacuna-item p { margin: 0; color: #64748b; font-size: 0.8rem; }
+        
+        /* Item Historial Clínico */
+        .historial-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; border-left: 4px solid var(--med); transition: 0.2s; }
+        .historial-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .historial-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: flex-start; }
+        .historial-fecha { font-size: 0.8rem; font-weight: bold; color: var(--med); background: #e0e7ff; padding: 4px 8px; border-radius: 6px; }
+        .historial-motivo { font-size: 1.05rem; font-weight: bold; color: var(--dark); margin: 0 0 5px 0; }
+        .historial-vet { font-size: 0.8rem; color: #64748b; margin: 0; display: flex; align-items: center; gap: 5px; }
+        .btn-ver-detalle { background: white; border: 1px solid #cbd5e1; color: #475569; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; transition: 0.2s; }
+        .btn-ver-detalle:hover { background: var(--med); color: white; border-color: var(--med); }
+
+        .acciones-medicas { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 25px 30px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+        .btn-medico { padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-consulta { background: var(--med); color: white; }
+        .btn-consulta:hover { background: #4f46e5; }
+        .btn-vacuna { background: var(--primary); color: white; }
+        .btn-vacuna:hover { background: #0284c7; }
+        
+        .msj-error { color: var(--danger); text-align: center; margin-top: 15px; font-weight: bold; display: none; }
+
+        /* MODALES (Ventanas Emergentes) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 550px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .btn-cerrar-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+        
+        .modal-content h3 { margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem; }
+        .input-form { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: 0.2s; font-family: inherit; }
+        .input-form:focus { border-color: var(--med); }
+        textarea.input-form { resize: vertical; min-height: 80px; }
+        .input-label { font-size: 0.85rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        
+        .btn-guardar { width: 100%; background: var(--med); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-guardar-vacuna { background: var(--primary); }
+
+        /* Vista de Detalle (Read Only) */
+        .detalle-seccion { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .detalle-seccion h5 { margin: 0 0 8px 0; color: var(--dark); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+        .detalle-seccion p { margin: 0; color: #334155; font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+    <div class="panel-contenedor">
+        
+        <div class="cabecera">
+            <h2><i class="fa-solid fa-stethoscope" style="color: var(--primary);"></i> Portal Clínico Bepy</h2>
+            <button id="btn-salir" class="btn-salir">Cerrar Sesión</button>
+        </div>
+
+        <div class="buscador-box">
+            <h3>Buscar Paciente</h3>
+            <p>Ingresá el Código Bepy de la credencial del dueño</p>
+            <div class="input-group">
+                <input type="text" id="input-codigo" class="input-buscar" placeholder="Ej: BEPY-A4X1" autocomplete="off">
+                <button id="btn-buscar" class="btn-buscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+            <div id="msj-error" class="msj-error">No se encontró ningún paciente con ese código.</div>
+        </div>
+
+        <div id="resultado-clinico">
+            <div class="ficha-medica">
+                <!-- ENCABEZADO -->
+                <div class="ficha-header">
+                    <div class="paciente-info">
+                        <div class="foto-paciente" id="ficha-foto"></div>
+                        <div class="datos-principales">
+                            <h2 id="ficha-nombre">Cargando...</h2>
+                            <p id="ficha-subtitulo">Raza • Edad</p>
+                            <p style="font-size: 0.9rem; font-weight:bold; margin-top:5px; color: var(--dark);">Peso actual: <span id="ficha-peso" style="color:var(--primary);">--</span> | Estado: <span id="ficha-reproduccion">--</span></p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.8rem; color: #64748b; font-weight: bold; text-transform: uppercase;">Código Paciente</span><br>
+                        <span id="ficha-codigo" style="font-size: 1.2rem; color: var(--primary); font-weight: 900;"></span>
+                    </div>
+                </div>
+
+                <div id="contenedor-alerta"></div>
+
+                <!-- CUERPO DIVIDIDO EN 2 COLUMNAS (HISTORIAL Y VACUNAS) -->
+                <div class="ficha-body">
+                    
+                    <!-- COLUMNA 1: HISTORIAL CLÍNICO -->
+                    <div>
+                        <div class="seccion-titulo">
+                            <span><i class="fa-solid fa-file-medical" style="color: var(--med);"></i> Historial Clínico</span>
+                        </div>
+                        <div class="lista-datos" id="contenedor-consultas">
+                            <!-- Las consultas se cargan acá -->
+                            <p style="color: #94a3b8; font-size: 0.9rem; text-align: center; margin: 10px 0;">No hay consultas médicas previas.</p>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA 2: CARNET DE VACUNACIÓN -->
+                    <div>
+                        <div class="seccion-titulo">
+                            <span><i class="fa-solid fa-syringe" style="color: var(--primary);"></i> Vacunas Aplicadas</span>
+                        </div>
+                        <div class="lista-datos" id="contenedor-vacunas">
+                            <!-- Las vacunas se cargan acá -->
+                            <p style="color: #94a3b8; font-size: 0.9rem; text-align: center; margin: 10px 0;">Libreta de vacunación vacía.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- BOTONERA DE ACCIÓN -->
+                <div class="acciones-medicas">
+                    <button class="btn-medico btn-consulta" id="btn-abrir-consulta">
+                        <i class="fa-solid fa-notes-medical"></i> Registrar Nueva Consulta
+                    </button>
+                    <button class="btn-medico btn-vacuna" id="btn-abrir-vacuna">
+                        <i class="fa-solid fa-syringe"></i> Aplicar Vacuna
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL 1: REGISTRAR NUEVA CONSULTA MÉDICA       -->
+    <!-- ============================================== -->
+    <div id="modal-consulta" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-consulta').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="color: var(--med);"><i class="fa-solid fa-user-doctor"></i> Ficha de Consulta Médica</h3>
+            
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 2;">
+                    <label class="input-label">Motivo de la visita *</label>
+                    <input type="text" id="cons-motivo" class="input-form" placeholder="Ej: Control general, Vómitos, Rengo...">
+                </div>
+                <div style="flex: 1;">
+                    <label class="input-label">Peso hoy (Kg)</label>
+                    <input type="number" id="cons-peso" class="input-form" placeholder="Ej: 15.2">
+                </div>
+            </div>
+
+            <label class="input-label">Anamnesis / Síntomas</label>
+            <textarea id="cons-sintomas" class="input-form" placeholder="Describí los síntomas que reporta el dueño..."></textarea>
+
+            <label class="input-label">Diagnóstico Presuntivo / Definitivo *</label>
+            <textarea id="cons-diagnostico" class="input-form" placeholder="Ej: Gastroenteritis aguda..."></textarea>
+
+            <label class="input-label">Tratamiento y Receta (Indicaciones)</label>
+            <textarea id="cons-tratamiento" class="input-form" placeholder="Ej: Amoxicilina 500mg cada 12hs por 7 días..."></textarea>
+
+            <button id="btn-guardar-consulta" class="btn-guardar"><i class="fa-solid fa-floppy-disk"></i> Firmar y Guardar Historial</button>
+            <p id="msj-consulta" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL 2: VER DETALLE DE UNA CONSULTA PASADA    -->
+    <!-- ============================================== -->
+    <div id="modal-detalle-consulta" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-detalle-consulta').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="color: var(--dark);"><i class="fa-solid fa-file-medical"></i> Detalle de Consulta</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;" id="det-meta">Fecha • Profesional</p>
+            
+            <div class="detalle-seccion">
+                <h5>Motivo y Evaluación Inicial</h5>
+                <p><strong>Motivo:</strong> <span id="det-motivo"></span></p>
+                <p><strong>Peso registrado:</strong> <span id="det-peso"></span> kg</p>
+            </div>
+            
+            <div class="detalle-seccion">
+                <h5>Síntomas Reportados</h5>
+                <p id="det-sintomas"></p>
+            </div>
+
+            <div class="detalle-seccion" style="border-left: 4px solid var(--med);">
+                <h5>Diagnóstico</h5>
+                <p id="det-diagnostico"></p>
+            </div>
+
+            <div class="detalle-seccion" style="border-left: 4px solid var(--success);">
+                <h5>Tratamiento Indicado</h5>
+                <p id="det-tratamiento"></p>
+            </div>
+            
+            <button class="btn-guardar" style="background: white; color: var(--dark); border: 2px solid #cbd5e1;" onclick="document.getElementById('modal-detalle-consulta').style.display='none'">Cerrar Historial</button>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL 3: REGISTRO DE VACUNAS (Ya lo teníamos)  -->
+    <!-- ============================================== -->
+    <div id="modal-vacuna" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-vacuna').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="color: var(--primary);"><i class="fa-solid fa-syringe"></i> Aplicar Vacuna</h3>
+            
+            <label class="input-label">Tipo de Vacuna</label>
+            <select id="vacuna-tipo" class="input-form">
+                <option value="" disabled selected>Seleccioná una vacuna...</option>
+                <optgroup label="Perros"><option value="Antirrábica">Antirrábica</option><option value="Séxtuple">Séxtuple (Múltiple)</option></optgroup>
+                <optgroup label="Gatos"><option value="Antirrábica">Antirrábica</option><option value="Triple Felina">Triple Felina</option></optgroup>
+            </select>
+
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label class="input-label">Fecha Aplicación</label>
+                    <input type="date" id="vacuna-fecha" class="input-form">
+                </div>
+                <div style="flex: 1;">
+                    <label class="input-label" style="color: var(--success);">Vencimiento (1 Año)</label>
+                    <input type="date" id="vacuna-vencimiento" class="input-form" style="background: #f8fafc;">
+                </div>
+            </div>
+            <button id="btn-guardar-vacuna" class="btn-guardar btn-guardar-vacuna">Guardar Vacuna</button>
+            <p id="msj-vacuna" style="text-align: center; font-weight: bold; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+
+    <!-- CEREBRO DE FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "bepy-data");
+
+        let profesionalActual = null;
+        let mascotaActualId = null; 
+        let mascotaActualCodigo = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "index.html"; else profesionalActual = user;
+        });
+        document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+        // =====================================
+        // 1. BUSCADOR Y DIBUJADO DE FICHA
+        // =====================================
+        const btnBuscar = document.getElementById('btn-buscar');
+        const inputCodigo = document.getElementById('input-codigo');
+        const resultadoDiv = document.getElementById('resultado-clinico');
+        
+        inputCodigo.addEventListener('keypress', (e) => { if (e.key === 'Enter') buscarPaciente(); });
+        btnBuscar.addEventListener('click', buscarPaciente);
+
+        async function buscarPaciente() {
+            const codigo = inputCodigo.value.trim().toUpperCase();
+            if (!codigo) return;
+
+            resultadoDiv.style.display = 'none';
+            document.getElementById('msj-error').style.display = 'none';
+            btnBuscar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            try {
+                const q = query(collection(db, "mascotas"), where("codigo_bepy", "==", codigo));
+                const consulta = await getDocs(q);
+
+                if (consulta.empty) {
+                    document.getElementById('msj-error').style.display = 'block';
+                    btnBuscar.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>'; return;
+                }
+
+                consulta.forEach((doc) => {
+                    const datos = doc.data();
+                    mascotaActualId = doc.id; 
+                    mascotaActualCodigo = datos.codigo_bepy;
+                    dibujarFichaClinica(datos);
+                });
+                
+                // Cargar ambas columnas en paralelo
+                cargarHistorialClinico();
+                cargarHistorialVacunas();
+
+            } catch (error) { console.error(error); }
+            finally { btnBuscar.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>'; }
+        }
+
+        function dibujarFichaClinica(datos) {
+            document.getElementById('ficha-nombre').innerText = datos.nombre;
+            document.getElementById('ficha-subtitulo').innerText = `${datos.raza} • ${datos.edad} años`;
+            document.getElementById('ficha-codigo').innerText = datos.codigo_bepy;
+            document.getElementById('ficha-peso').innerText = `${datos.peso} kg`;
+            document.getElementById('ficha-reproduccion').innerText = datos.reproduccion;
+
+            const contFoto = document.getElementById('ficha-foto');
+            if (datos.fotoBase64) contFoto.innerHTML = `<img src="${datos.fotoBase64}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            else contFoto.innerHTML = `<i class="fa-solid ${datos.especie === 'gato' ? 'fa-cat' : 'fa-dog'}"></i>`;
+
+            const contAlerta = document.getElementById('contenedor-alerta');
+            if (datos.alerta_medica) {
+                contAlerta.innerHTML = `<div class="alerta-critica"><i class="fa-solid fa-triangle-exclamation"></i><div><strong style="display:block; font-size:0.85rem;">Atención Médica</strong><span style="font-size: 1.1rem; font-weight:bold;">${datos.alerta_medica}</span></div></div>`;
+            } else contAlerta.innerHTML = "";
+
+            resultadoDiv.style.display = 'block';
+        }
+
+        // =====================================
+        // 2. MÓDULO: HISTORIAL CLÍNICO
+        // =====================================
+        let consultasLocales = []; // Para poder ver el detalle sin volver a descargar de Firebase
+
+        document.getElementById('btn-abrir-consulta').addEventListener('click', () => {
+            document.getElementById('modal-consulta').style.display = 'flex';
+        });
+
+        document.getElementById('btn-guardar-consulta').addEventListener('click', async () => {
+            const motivo = document.getElementById('cons-motivo').value;
+            const diagnostico = document.getElementById('cons-diagnostico').value;
+            const sintomas = document.getElementById('cons-sintomas').value || "Sin observaciones";
+            const tratamiento = document.getElementById('cons-tratamiento').value || "Sin tratamiento específico";
+            const peso = document.getElementById('cons-peso').value || "--";
+            
+            const btn = document.getElementById('btn-guardar-consulta');
+            const msj = document.getElementById('msj-consulta');
+
+            if(!motivo || !diagnostico) {
+                msj.innerText = "Motivo y Diagnóstico son obligatorios."; msj.style.color = "red"; return;
+            }
+
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Guardando..."; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "consultas"), {
+                    mascota_id: mascotaActualId,
+                    veterinario_email: profesionalActual.email,
+                    fecha: new Date().toISOString(), // Fecha exacta automática
+                    motivo: motivo,
+                    sintomas: sintomas,
+                    diagnostico: diagnostico,
+                    tratamiento: tratamiento,
+                    peso: peso
+                });
+
+                msj.innerText = "¡Consulta guardada y sellada!"; msj.style.color = "var(--success)";
+                
+                setTimeout(() => {
+                    document.getElementById('modal-consulta').style.display = 'none';
+                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Firmar y Guardar Historial'; btn.disabled = false;
+                    
+                    // Limpiar campos
+                    ['motivo','peso','sintomas','diagnostico','tratamiento'].forEach(id => document.getElementById('cons-'+id).value = '');
+                    msj.innerText = "";
+                    
+                    cargarHistorialClinico(); // Recargar la lista
+                }, 1500);
+
+            } catch (error) {
+                msj.innerText = "Error: " + error.message; msj.style.color = "red";
+                btn.disabled = false;
+            }
+        });
+
+        async function cargarHistorialClinico() {
+            const cont = document.getElementById('contenedor-consultas');
+            cont.innerHTML = '<p style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</p>';
+
+            try {
+                const q = query(collection(db, "consultas"), where("mascota_id", "==", mascotaActualId));
+                const res = await getDocs(q);
+
+                if (res.empty) {
+                    cont.innerHTML = '<p style="color: #94a3b8; font-size: 0.9rem; text-align: center; margin: 10px 0;">No hay consultas previas registradas.</p>'; return;
+                }
+
+                consultasLocales = [];
+                res.forEach(doc => {
+                    const data = doc.data(); data.id = doc.id; consultasLocales.push(data);
+                });
+                
+                // Ordenar por fecha (más nueva arriba)
+                consultasLocales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+                cont.innerHTML = "";
+                consultasLocales.forEach(c => {
+                    const fechaAr = new Date(c.fecha).toLocaleDateString('es-AR');
+                    // Recortamos el veterinario para mostrar solo el nombre antes del @
+                    const vetName = c.veterinario_email.split('@')[0];
+
+                    cont.innerHTML += `
+                        <div class="historial-item">
+                            <div class="historial-header">
+                                <span class="historial-fecha"><i class="fa-regular fa-calendar"></i> ${fechaAr}</span>
+                            </div>
+                            <h4 class="historial-motivo">${c.motivo}</h4>
+                            <p class="historial-vet"><i class="fa-solid fa-stethoscope"></i> Dr/a. ${vetName}</p>
+                            <button class="btn-ver-detalle" onclick="window.abrirDetalleConsulta('${c.id}')">Ver Detalle Completo</button>
+                        </div>
+                    `;
+                });
+
+            } catch (error) { cont.innerHTML = '<p style="color:red; text-align:center;">Error al cargar historial.</p>'; }
+        }
+
+        // Abrir la ficha de solo lectura
+        window.abrirDetalleConsulta = function(id) {
+            const c = consultasLocales.find(x => x.id === id);
+            if(!c) return;
+
+            const fechaAr = new Date(c.fecha).toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            document.getElementById('det-meta').innerText = `${fechaAr} • Atendido por: ${c.veterinario_email}`;
+            document.getElementById('det-motivo').innerText = c.motivo;
+            document.getElementById('det-peso').innerText = c.peso;
+            document.getElementById('det-sintomas').innerText = c.sintomas;
+            document.getElementById('det-diagnostico').innerText = c.diagnostico;
+            document.getElementById('det-tratamiento').innerText = c.tratamiento;
+
+            document.getElementById('modal-detalle-consulta').style.display = 'flex';
+        }
+
+        // =====================================
+        // 3. MÓDULO: VACUNAS (Lógica preservada)
+        // =====================================
+        const modalVacuna = document.getElementById('modal-vacuna');
+        document.getElementById('btn-abrir-vacuna').addEventListener('click', () => {
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('vacuna-fecha').value = hoy;
+            calcVencimiento(hoy); modalVacuna.style.display = 'flex';
+        });
+
+        document.getElementById('vacuna-fecha').addEventListener('change', (e) => calcVencimiento(e.target.value));
+        function calcVencimiento(fechaBase) {
+            if(!fechaBase) return;
+            const f = new Date(fechaBase); f.setFullYear(f.getFullYear() + 1);
+            document.getElementById('vacuna-vencimiento').value = f.toISOString().split('T')[0];
+        }
+
+        document.getElementById('btn-guardar-vacuna').addEventListener('click', async () => {
+            const tipo = document.getElementById('vacuna-tipo').value;
+            const fApp = document.getElementById('vacuna-fecha').value;
+            const fVenc = document.getElementById('vacuna-vencimiento').value;
+            const btn = document.getElementById('btn-guardar-vacuna');
+            const msj = document.getElementById('msj-vacuna');
+
+            if(!tipo) { msj.innerText = "Elegí una vacuna."; msj.style.color="red"; return; }
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Guardando..."; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "vacunas"), {
+                    mascota_id: mascotaActualId, veterinario_email: profesionalActual.email,
+                    tipo: tipo, fecha_aplicacion: fApp, fecha_vencimiento: fVenc
+                });
+                msj.innerText = "¡Vacuna guardada!"; msj.style.color = "var(--success)";
+                setTimeout(() => {
+                    modalVacuna.style.display = 'none'; btn.innerHTML = 'Guardar Vacuna'; btn.disabled = false;
+                    document.getElementById('vacuna-tipo').value = ""; msj.innerText = "";
+                    cargarHistorialVacunas();
+                }, 1500);
+            } catch (error) { msj.innerText = "Error"; btn.disabled = false; }
+        });
+
+        async function cargarHistorialVacunas() {
+            const cont = document.getElementById('contenedor-vacunas');
+            cont.innerHTML = '<p style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</p>';
+            try {
+                const q = query(collection(db, "vacunas"), where("mascota_id", "==", mascotaActualId));
+                const res = await getDocs(q);
+                if (res.empty) { cont.innerHTML = '<p style="color: #94a3b8; font-size: 0.9rem; text-align: center; margin: 10px 0;">Libreta vacía.</p>'; return; }
+                
+                const vac = []; res.forEach(doc => vac.push(doc.data()));
+                vac.sort((a, b) => new Date(b.fecha_aplicacion) - new Date(a.fecha_aplicacion));
+                cont.innerHTML = "";
+                vac.forEach(d => {
+                    const fa = new Date(d.fecha_aplicacion + 'T12:00:00').toLocaleDateString('es-AR');
+                    const fv = new Date(d.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-AR');
+                    cont.innerHTML += `<div class="vacuna-item"><div><h4><i class="fa-solid fa-vial" style="color:var(--primary);"></i> ${d.tipo}</h4><p>Aplicada: ${fa} • Vence: <strong>${fv}</strong></p></div></div>`;
+                });
+            } catch (error) { cont.innerHTML = '<p style="color:red; text-align:center;">Error.</p>'; }
+        }
+    </script>
+</body>
+</html>

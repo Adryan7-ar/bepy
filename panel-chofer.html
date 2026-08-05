@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BepyRide - Portal de Conductores</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LIBRERÍA DE MAPAS (LEAFLET) PARA EL GPS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root { --primary: #0ea5e9; --dark: #0f172a; --bg: #f1f5f9; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--dark); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        .app-container { width: 100%; max-width: 500px; height: 100%; position: relative; display: flex; flex-direction: column; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+        
+        /* HEADER CONDUCTOR */
+        .header { background: white; padding: 20px 20px 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .perfil-chofer { display: flex; align-items: center; gap: 15px; }
+        .foto-chofer { width: 50px; height: 50px; background: #e2e8f0; border-radius: 50%; overflow: hidden; border: 2px solid var(--success); }
+        .foto-chofer img { width: 100%; height: 100%; object-fit: cover; }
+        .info-chofer h3 { margin: 0 0 2px 0; font-size: 1.1rem; color: var(--dark); }
+        .badge-kyc { background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-salir { background: transparent; color: var(--danger); border: none; font-size: 1.5rem; cursor: pointer; }
+
+        /* MAPA (OCUPA EL RESTO DE LA PANTALLA) */
+        #mapa-chofer { flex-grow: 1; width: 100%; z-index: 1; }
+
+        /* PANEL INFERIOR (BOTTOM SHEET) */
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: white; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); z-index: 1000; padding: 25px 20px; box-sizing: border-box; transition: 0.3s transform ease-in-out; }
+        
+        .estado-conexion { text-align: center; margin-bottom: 20px; }
+        .estado-conexion h2 { margin: 0 0 5px 0; font-size: 1.5rem; color: var(--dark); }
+        .estado-conexion p { margin: 0; color: #64748b; font-size: 0.95rem; }
+
+        .btn-conectar { width: 100%; background: var(--dark); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); }
+        .btn-conectar.online { background: var(--danger); box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
+        
+        /* ALERTA DE VIAJE NUEVO */
+        .alerta-viaje { display: none; background: var(--primary); color: white; border-radius: 16px; padding: 20px; text-align: center; animation: latido 1.5s infinite; margin-bottom: 15px; }
+        @keyframes latido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        .alerta-viaje h3 { margin: 0 0 10px 0; font-size: 1.4rem; }
+        .alerta-viaje p { margin: 0 0 15px 0; font-size: 1rem; opacity: 0.9; }
+        .btn-aceptar { width: 100%; background: white; color: var(--primary); border: none; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+
+        /* FICHA DEL PASAJERO (VIAJE EN CURSO) */
+        .viaje-activo { display: none; }
+        .pasajero-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+        .pasajero-foto { width: 60px; height: 60px; border-radius: 50%; background: #cbd5e1; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: white; }
+        .alerta-temporal { background: #fef2f2; border-left: 4px solid var(--danger); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #991b1b; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+        .acciones-viaje { display: flex; gap: 10px; }
+        .btn-accion { flex: 1; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; }
+        .btn-navegar { background: var(--primary); color: white; }
+        .btn-finalizar { background: var(--success); color: white; }
+
+        /* MODALES (Calificación y KYC) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; }
+        .estrellas { color: #cbd5e1; font-size: 2.5rem; margin: 20px 0; cursor: pointer; display: flex; justify-content: center; gap: 10px; }
+        .estrellas i:hover, .estrellas i.activa { color: var(--warning); }
+        .btn-guardar { width: 100%; background: var(--dark); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- CABECERA -->
+        <div class="header">
+            <div class="perfil-chofer">
+                <div class="foto-chofer">
+                    <img src="https://placehold.co/100x100/1e293b/ffffff?text=C" alt="Chofer">
+                </div>
+                <div class="info-chofer">
+                    <h3>Carlos M.</h3>
+                    <div class="badge-kyc" onclick="alert('Documentación (Seguro, Licencia, Vehículo) validada por Bepy Admin.')"><i class="fa-solid fa-shield-check"></i> Conductor Verificado</div>
+                </div>
+            </div>
+            <button class="btn-salir" id="btn-salir"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+
+        <!-- MAPA GPS -->
+        <div id="mapa-chofer"></div>
+
+        <!-- PANEL DE CONTROL (BOTTOM SHEET) -->
+        <div class="bottom-sheet" id="panel-control">
+            
+            <!-- ESTADO DESCONECTADO / CONECTADO -->
+            <div id="vista-conexion">
+                <div class="estado-conexion">
+                    <h2 id="texto-estado">Estás desconectado</h2>
+                    <p id="subtexto-estado">Conectate para recibir viajes de mascotas.</p>
+                </div>
+                <button class="btn-conectar" id="btn-toggle-conexion">Conectarse a BepyRide</button>
+            </div>
+
+            <!-- ALERTA DE NUEVO VIAJE -->
+            <div class="alerta-viaje" id="vista-alerta">
+                <h3><i class="fa-solid fa-bell"></i> ¡Nuevo viaje solicitado!</h3>
+                <p><strong>A 2.5 km (5 min)</strong><br>Destino: Veterinaria San Roque</p>
+                <button class="btn-aceptar" onclick="aceptarViaje()">Aceptar Viaje</button>
+            </div>
+
+            <!-- VIAJE EN CURSO (FICHA TEMPORAL) -->
+            <div class="viaje-activo" id="vista-viaje">
+                <h3 style="margin: 0 0 10px 0; color: var(--dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Viaje en curso</h3>
+                
+                <div class="pasajero-card">
+                    <div class="pasajero-foto"><i class="fa-solid fa-dog"></i></div>
+                    <div>
+                        <h4 style="margin: 0 0 3px 0; font-size: 1.2rem; color: var(--dark);">Simón</h4>
+                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Dueño: Martín (⭐ 4.9)</p>
+                        <p style="margin: 0; color: var(--primary); font-weight: bold; font-size: 0.85rem;">Mestizo • 18 kg</p>
+                    </div>
+                </div>
+
+                <!-- FICHA TEMPORAL: INFORMACIÓN CLAVE PARA EL CHOFER -->
+                <div class="alerta-temporal">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Aviso del dueño:</strong><br>
+                        "Es asustadizo con bocinas. Por favor llevar vidrios cerrados y música baja."
+                    </div>
+                </div>
+
+                <div class="acciones-viaje">
+                    <button class="btn-accion btn-navegar" onclick="iniciarNavegacion()"><i class="fa-solid fa-location-arrow"></i> Navegar GPS</button>
+                    <button class="btn-accion btn-finalizar" onclick="finalizarViaje()"><i class="fa-solid fa-flag-checkered"></i> Terminar</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL DE CALIFICACIÓN (BIDIRECCIONAL) -->
+    <div id="modal-calificacion" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--dark); margin-top: 0;">Viaje Finalizado</h2>
+            <p style="color: #64748b;">¿Cómo se portaron Simón y su dueño durante el viaje?</p>
+            
+            <div class="estrellas" id="estrellas-calificacion">
+                <i class="fa-solid fa-star" data-val="1"></i>
+                <i class="fa-solid fa-star" data-val="2"></i>
+                <i class="fa-solid fa-star" data-val="3"></i>
+                <i class="fa-solid fa-star" data-val="4"></i>
+                <i class="fa-solid fa-star" data-val="5"></i>
+            </div>
+            
+            <textarea style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-sizing: border-box; font-family: inherit;" rows="3" placeholder="Dejá un comentario (Opcional)"></textarea>
+            
+            <button class="btn-guardar" onclick="cerrarCalificacion()"><i class="fa-solid fa-check"></i> Calificar Pasajero</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Seguridad Básica
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "index.html"; });
+        document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+        // ==========================================
+        // 1. INICIALIZAR EL MAPA GPS (Leaflet)
+        // ==========================================
+        const miMapa = L.map('mapa-chofer', { zoomControl: false }).setView([-34.9205, -57.9536], 14); // Centro en La Plata
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: 'Bepy Maps'
+        }).addTo(miMapa);
+        
+        // El auto del chofer (Icono personalizado)
+        const iconoAuto = L.divIcon({ html: '<div style="background:var(--dark); color:white; width:40px; height:40px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:3px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.3);"><i class="fa-solid fa-car"></i></div>', className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+        const marcadorChofer = L.marker([-34.9205, -57.9536], {icon: iconoAuto}).addTo(miMapa);
+
+        // ==========================================
+        // 2. LÓGICA DE CONEXIÓN Y ALERTA DE VIAJES
+        // ==========================================
+        let estaOnline = false;
+        let simuladorViajeTimer = null;
+        
+        const btnConectar = document.getElementById('btn-toggle-conexion');
+        const vistaConexion = document.getElementById('vista-conexion');
+        const vistaAlerta = document.getElementById('vista-alerta');
+        const vistaViaje = document.getElementById('vista-viaje');
+
+        btnConectar.addEventListener('click', () => {
+            estaOnline = !estaOnline;
+            
+            if (estaOnline) {
+                // SE CONECTA
+                btnConectar.classList.add('online');
+                btnConectar.innerText = "Desconectarse";
+                document.getElementById('texto-estado').innerText = "Buscando pasajeros...";
+                document.getElementById('subtexto-estado').innerText = "Mantenete alerta en la zona centro.";
+                
+                // Efecto de "radar" en el mapa
+                miMapa.setView([-34.9205, -57.9536], 15);
+                
+                // SIMULAMOS QUE CAE UN VIAJE A LOS 4 SEGUNDOS
+                simuladorViajeTimer = setTimeout(() => {
+                    vistaConexion.style.display = 'none';
+                    vistaAlerta.style.display = 'block';
+                    // Suena un audio (opcional, simulado con un efecto visual acá)
+                }, 4000);
+
+            } else {
+                // SE DESCONECTA
+                btnConectar.classList.remove('online');
+                btnConectar.innerText = "Conectarse a BepyRide";
+                document.getElementById('texto-estado').innerText = "Estás desconectado";
+                document.getElementById('subtexto-estado').innerText = "Conectate para recibir viajes de mascotas.";
+                clearTimeout(simuladorViajeTimer);
+                vistaAlerta.style.display = 'none';
+            }
+        });
+
+        // ==========================================
+        // 3. VIAJE EN CURSO (FICHA TEMPORAL Y NAVEGACIÓN)
+        // ==========================================
+        window.aceptarViaje = function() {
+            vistaAlerta.style.display = 'none';
+            vistaViaje.style.display = 'block';
+
+            // Simulamos dibujar la ruta en el mapa (Una línea desde el chofer hasta la veterinaria)
+            const origen = [-34.9205, -57.9536];
+            const destino = [-34.9300, -57.9400]; // Veterinaria ficticia
+            
+            const iconoDestino = L.divIcon({ html: '<div style="background:var(--success); color:white; width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:2px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.3);"><i class="fa-solid fa-flag-checkered"></i></div>', className: '', iconSize: [30, 30] });
+            L.marker(destino, {icon: iconoDestino}).addTo(miMapa);
+            
+            L.polyline([origen, destino], {color: 'var(--primary)', weight: 5, opacity: 0.7}).addTo(miMapa);
+            miMapa.fitBounds([origen, destino], {padding: [50, 50]});
+        }
+
+        window.iniciarNavegacion = function() {
+            // Simulamos que el auto se mueve hacia el destino
+            alert("Navegación GPS Iniciada. Guiando hacia Veterinaria San Roque...");
+            const btnNav = document.querySelector('.btn-navegar');
+            btnNav.innerHTML = '<i class="fa-solid fa-location-arrow"></i> En camino...';
+            btnNav.style.background = '#64748b';
+        }
+
+        // ==========================================
+        // 4. CALIFICACIÓN BIDIRECCIONAL
+        // ==========================================
+        window.finalizarViaje = function() {
+            document.getElementById('modal-calificacion').style.display = 'flex';
+        }
+
+        // Sistema de estrellas
+        const estrellas = document.querySelectorAll('#estrellas-calificacion i');
+        estrellas.forEach(estrella => {
+            estrella.addEventListener('click', function() {
+                const valor = this.getAttribute('data-val');
+                estrellas.forEach(e => {
+                    if (e.getAttribute('data-val') <= valor) e.classList.add('activa');
+                    else e.classList.remove('activa');
+                });
+            });
+        });
+
+        window.cerrarCalificacion = function() {
+            alert("¡Calificación guardada! Tu reputación ayuda a mantener la red segura.");
+            document.getElementById('modal-calificacion').style.display = 'none';
+            
+            // Reseteamos el panel al estado inicial online
+            vistaViaje.style.display = 'none';
+            vistaConexion.style.display = 'block';
+            document.getElementById('texto-estado').innerText = "Buscando pasajeros...";
+            document.getElementById('subtexto-estado').innerText = "Viaje finalizado. ¡Buen trabajo!";
+            
+            // Limpiamos la ruta del mapa (recargando la vista simple)
+            miMapa.eachLayer((layer) => {
+                if (layer instanceof L.Polyline || layer.getLatLng().lat === -34.9300) {
+                    miMapa.removeLayer(layer);
+                }
+            });
+            miMapa.setView([-34.9205, -57.9536], 15);
+        }
+    </script>
+</body>
+</html>

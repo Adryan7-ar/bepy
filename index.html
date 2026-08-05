@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bepy | La red de salud para tu mascota</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0ea5e9; --dark: #0f172a; --bg: #f8fafc; --accent: #f59e0b; --danger: #ef4444; --success: #10b981; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--dark); overflow-x: hidden; }
+        
+        /* NAVEGACIÓN */
+        nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 90%; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #475569; font-weight: 600; transition: 0.2s; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-ingresar { background: var(--primary); color: white !important; padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+        .btn-ingresar:hover { transform: translateY(-2px); background: #0284c7; }
+
+        /* HERO SECTION */
+        .hero { padding: 150px 5% 80px 5%; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; min-height: 70vh; }
+        .hero-text { flex: 1; padding-right: 40px; }
+        .hero-text h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; letter-spacing: -1px; }
+        .hero-text h1 span { color: var(--primary); }
+        .hero-text p { font-size: 1.2rem; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+        .botones-hero { display: flex; gap: 15px; }
+        .btn-main { padding: 15px 30px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.3s; display: inline-block; }
+        .btn-dueño { background: var(--dark); color: white; border: 2px solid var(--dark); }
+        .btn-dueño:hover { background: transparent; color: var(--dark); }
+        .btn-vet { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+        .btn-vet:hover { background: var(--primary); color: white; }
+
+        /* SIMULADOR INTERACTIVO (CELULAR) */
+        .hero-visual { flex: 1; display: flex; justify-content: center; position: relative; }
+        .phone-mockup { width: 300px; height: 600px; background: white; border-radius: 40px; border: 12px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 25px; background: #1e293b; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 50; }
+        
+        /* PANTALLA 1: NORMAL */
+        .app-screen { padding: 50px 20px 20px 20px; background: #f8fafc; height: 100%; transition: 0.4s; position: absolute; top: 0; left: 0; width: 100%; box-sizing: border-box; }
+        .sim-credencial { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .sim-foto { width: 70px; height: 70px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #94a3b8; }
+        .sim-btn-sos { background: #fee2e2; color: var(--danger); border: 1px solid #f87171; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
+        .sim-btn-sos:hover { background: var(--danger); color: white; transform: scale(1.02); }
+        
+        /* PANTALLA 2: RADAR Y SELECCIÓN DE VET */
+        .sos-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: 0.5s ease-in-out; z-index: 10; }
+        
+        /* Mapa Oscuro */
+        .mapa-radar { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid var(--danger); overflow: hidden; z-index: 1; }
+        .mapa-radar::before { content: ''; position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px; background-image: url('https://tile.openstreetmap.org/15/11010/19888.png'); background-size: cover; background-position: center; filter: invert(100%) hue-rotate(180deg) brightness(70%) contrast(120%); z-index: -2; }
+        .mapa-radar::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: -1; }
+        
+        /* Pin Central (Usuario en Emergencia) */
+        .pin-central { width: 35px; height: 35px; background: var(--danger); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 0.9rem; z-index: 10; box-shadow: 0 0 15px rgba(239,68,68,1); border: 2px solid white; }
+        .onda { position: absolute; width: 35px; height: 35px; background: rgba(239, 68, 68, 0.4); border-radius: 50%; animation: expandirRadar 2s infinite ease-out; z-index: 5; border: 2px solid rgba(239, 68, 68, 0.8); }
+        .onda-2 { animation-delay: 1s; }
+        
+        /* Pines Interactivos de Veterinarias Cercanas */
+        .pin-vet { position: absolute; background: white; border: 2px solid var(--primary); border-radius: 20px; padding: 4px 8px; font-size: 0.7rem; font-weight: bold; color: var(--dark); display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; opacity: 0; transition: 0.4s; transform: scale(0); z-index: 12; }
+        .pin-vet:hover { background: var(--primary); color: white; transform: scale(1.1) !important; }
+        .pin-vet-1 { top: 18%; left: 15%; }
+        .pin-vet-2 { top: 55%; left: 55%; }
+        
+        .mostrar-pines .pin-vet { opacity: 1; transform: scale(1); }
+
+        /* Notificación Flotante de Éxito */
+        .notificacion-exito { position: absolute; top: 40px; left: 10px; right: 10px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); padding: 12px; border-radius: 12px; box-shadow: 0 15px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; transform: translateY(-150px); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 20; }
+        .notificacion-exito.mostrar { transform: translateY(0); }
+        .notificacion-exito i { font-size: 1.8rem; color: var(--success); }
+        .noti-texto h4 { margin: 0 0 2px 0; color: var(--dark); font-size: 0.9rem; }
+        .noti-texto p { margin: 0; color: #475569; font-size: 0.75rem; line-height: 1.2; }
+
+        /* PANTALLA 3: OUTRO */
+        .outro-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 30; opacity: 0; pointer-events: none; transition: 0.5s ease; }
+        .outro-screen.mostrar { opacity: 1; pointer-events: auto; }
+        .outro-logo { font-size: 5rem; margin-bottom: 10px; text-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .outro-screen h2 { font-size: 2.5rem; margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px; }
+        .outro-screen p { font-size: 1.1rem; margin: 0; opacity: 0.9; font-weight: 500; }
+
+        @keyframes expandirRadar { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(5); opacity: 0; } }
+        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .info-sos { padding: 20px; text-align: center; background: #0f172a; color: white; }
+        .info-sos h3 { margin: 0 0 8px 0; color: var(--danger); font-size: 1.1rem; animation: parpadeo 1s infinite; }
+        .info-sos p { font-size: 0.8rem; color: #94a3b8; margin: 0 0 15px 0; line-height: 1.3; }
+        .btn-apagar-sos { background: transparent; border: 1px solid #475569; color: white; padding: 8px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-apagar-sos:hover { background: #334155; }
+        
+        /* RESTO DE SECCIONES */
+        .seccion-vacaciones { background: #0f172a; color: white; padding: 80px 5%; text-align: center; }
+        .vacaciones-container { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; gap: 40px; }
+        .vacaciones-text { flex: 1; text-align: left; }
+        .vacaciones-text h2 { font-size: 2.5rem; margin-bottom: 20px; color: var(--primary); }
+        .vacaciones-text p { font-size: 1.1rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px; }
+        .vacaciones-animacion { flex: 1; position: relative; height: 300px; background: rgba(255,255,255,0.05); border-radius: 20px; display: flex; justify-content: center; align-items: center; border: 1px dashed #334155; }
+        
+        .seccion-contacto { padding: 80px 5%; background: white; text-align: center; }
+        .contacto-box { max-width: 600px; margin: 0 auto; background: var(--bg); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .contacto-box h2 { margin-top: 0; font-size: 2rem; color: var(--dark); }
+        .contacto-box p { color: #64748b; margin-bottom: 30px; }
+        .input-form { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.3s; font-family: inherit; }
+        .input-form:focus { border-color: var(--primary); }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: #0284c7; }
+
+        footer { background: white; padding: 30px 5%; text-align: center; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><i class="fa-solid fa-paw"></i> Bepy</div>
+        <div class="nav-links">
+            <a href="#soluciones">Soluciones</a>
+            <a href="#red">Red Veterinaria</a>
+            <a href="#contacto">Contacto</a>
+            <a href="panel-usuario.html" class="btn-ingresar">Ingresar</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero" id="soluciones">
+        <div class="hero-text">
+            <h1>Tenencia responsable, <span>tecnología de punta.</span></h1>
+            <p>El primer pasaporte sanitario digital de Argentina. Tu mascota conectada a una red integral de veterinarios, comercios y transporte. Cuidá a tu mejor amigo con la plataforma que revoluciona el bienestar animal.</p>
+            <div class="botones-hero">
+                <a href="#contacto" class="btn-main btn-dueño">Quiero ser Fundador</a>
+                <a href="panel-profesional.html" class="btn-main btn-vet">Soy Veterinario</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.85rem; color: #94a3b8;"><i class="fa-solid fa-check" style="color: var(--success);"></i> 100% Gratis para dueños de mascotas.</p>
+        </div>
+        
+        <!-- EL SIMULADOR INTERACTIVO DE URGENCIAS -->
+        <div class="hero-visual">
+            <div class="phone-mockup">
+                <div class="phone-notch"></div>
+                
+                <!-- PANTALLA 1: NORMAL -->
+                <div class="app-screen" id="app-normal">
+                    <h3 style="color: var(--primary); text-align: center; margin-top: 20px;">Bepy Wallet</h3>
+                    <div class="sim-credencial">
+                        <div class="sim-foto"><i class="fa-solid fa-dog"></i></div>
+                        <h2 style="margin: 0; font-size: 1.5rem; color: var(--dark);">Simón</h2>
+                        <p style="margin: 5px 0 15px 0; color: #64748b; font-size: 0.9rem;">Mestizo • Al día <i class="fa-solid fa-circle-check" style="color: var(--success);"></i></p>
+                        <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; font-weight: bold; letter-spacing: 1px; color: var(--primary);">BEPY-A4X1</div>
+                    </div>
+                    
+                    <div class="sim-btn-sos" onclick="iniciarSimulacionUrgencia()">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Urgencia SOS / Buscar Vet
+                    </div>
+                    <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">(Hacé clic para ver el radar y derivación)</p>
+                </div>
+
+                <!-- PANTALLA 2: RADAR Y SELECCIÓN DE VETERINARIA -->
+                <div class="sos-screen" id="app-sos">
+                    <!-- Notificación de Éxito -->
+                    <div class="notificacion-exito" id="noti-encontrado">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <div class="noti-texto">
+                            <h4 id="titulo-notif">¡Derivación Exitosa!</h4>
+                            <p id="desc-notif">Historial enviado a Clínica Sur.</p>
+                        </div>
+                    </div>
+
+                    <div class="mapa-radar" id="mapa-radar">
+                        <!-- Pines Interactivos de Veterinarias de la Red (Se pueden clickear o se eligen solos) -->
+                        <div class="pin-vet pin-vet-1" onclick="seleccionarClinica('Clínica Veterinaria Sur')">
+                            <i class="fa-solid fa-user-doctor" style="color: var(--primary);"></i> Clínica Sur
+                        </div>
+                        <div class="pin-vet pin-vet-2" onclick="seleccionarClinica('Hospital Veterinario 24hs')">
+                            <i class="fa-solid fa-hospital" style="color: var(--danger);"></i> Vet 24hs
+                        </div>
+
+                        <!-- Pin Central (Ubicación actual) -->
+                        <div class="pin-central"><i class="fa-solid fa-paw"></i></div>
+                        <div class="onda"></div>
+                        <div class="onda onda-2"></div>
+                    </div>
+
+                    <div class="info-sos">
+                        <h3 id="texto-titulo-sos"><i class="fa-solid fa-radar"></i> BUSCANDO VETERINARIAS</h3>
+                        <p id="texto-desc-sos">Detectando centros de la Red Bepy cercanos...</p>
+                        <button class="btn-apagar-sos" onclick="abortarSimulacion()">Cancelar</button>
+                    </div>
+                </div>
+
+                <!-- PANTALLA 3: OUTRO (FINAL) -->
+                <div class="outro-screen" id="app-outro">
+                    <i class="fa-solid fa-paw outro-logo"></i>
+                    <h2>Bepy</h2>
+                    <p>Nunca más solos.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN VACACIONES -->
+    <section class="seccion-vacaciones" id="red">
+        <div class="vacaciones-container">
+            <div class="vacaciones-text">
+                <h2>Veraneá con tranquilidad absoluta</h2>
+                <p>¿Te vas a la costa con tu mascota? Bepy te acompaña. Contamos con una red de profesionales y comercios adheridos que cubre los principales balnearios, desde San Clemente hasta Mar Azul.</p>
+                <p>Si surge una urgencia en plenas vacaciones, cualquier veterinario de la red escanea el Código Bepy y accede instantáneamente a la libreta sanitaria, alertas por alergias y el historial clínico de tu médico de cabecera. Cero riesgos.</p>
+                <div style="display: flex; gap: 20px; margin-top: 30px;">
+                    <div><i class="fa-solid fa-user-doctor" style="color: var(--primary); font-size: 2rem;"></i><br><strong style="font-size: 1.2rem; display:block; margin-top:10px;">+150</strong><span style="font-size: 0.8rem; color:#94a3b8;">Clínicas</span></div>
+                    <div><i class="fa-solid fa-store" style="color: var(--accent); font-size: 2rem;"></i><br><strong style="font-size: 1.2rem; display:block; margin-top:10px;">+300</strong><span style="font-size: 0.8rem; color:#94a3b8;">Comercios</span></div>
+                </div>
+            </div>
+            <div class="vacaciones-animacion">
+                <i class="fa-solid fa-map-location-dot" style="font-size: 4rem; color: #334155;"></i>
+                <div style="position:absolute; width: 20px; height: 20px; background: var(--primary); border-radius:50%; box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); animation: pulse 2s infinite;"></div>
+                <div style="position:absolute; bottom: 20px; color: #94a3b8; font-weight:bold; letter-spacing: 2px;">RED ACTIVA</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN CONTACTO -->
+    <section class="seccion-contacto" id="contacto">
+        <div class="contacto-box">
+            <h2>Sumate a la revolución</h2>
+            <p>Dejanos tus datos, contanos si sos dueño, veterinario o comercio, y sé de los primeros en acceder a las funciones exclusivas antes del lanzamiento oficial.</p>
+            <form onsubmit="event.preventDefault(); alert('¡Gracias por sumarte! Pronto nos pondremos en contacto.'); this.reset();">
+                <input type="text" class="input-form" placeholder="Tu Nombre Completo" required>
+                <input type="email" class="input-form" placeholder="Tu Correo Electrónico" required>
+                <select class="input-form" required>
+                    <option value="" disabled selected>¿Cómo querés sumarte?</option>
+                    <option value="dueño">Soy dueño de mascota</option>
+                    <option value="veterinario">Soy Profesional Veterinario</option>
+                    <option value="comercio">Tengo un Pet Shop / Peluquería</option>
+                    <option value="chofer">Quiero ser Chofer BepyRide</option>
+                </select>
+                <textarea class="input-form" rows="3" placeholder="¿Tenés alguna consulta o sugerencia? (Opcional)"></textarea>
+                <button type="submit" class="btn-submit">Enviar Solicitud</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Bepy Global. Construido con pasión para mejorar la vida de nuestros mejores amigos.</p>
+    </footer>
+
+    <!-- SCRIPT DE INTERACCIÓN DE URGENCIA Y RED -->
+    <script>
+        let timelineUrgencia = [];
+
+        function iniciarSimulacionUrgencia() {
+            abortarSimulacion();
+
+            // Pasamos a la pantalla de Radar SOS
+            document.getElementById('app-normal').style.opacity = '0';
+            document.getElementById('app-sos').style.opacity = '1';
+            document.getElementById('app-sos').style.pointerEvents = 'auto';
+
+            // Paso 1 (A los 1.8 segundos): Aparecen los pines de las veterinarias cercanas en el radar
+            timelineUrgencia.push(setTimeout(() => {
+                document.getElementById('mapa-radar').classList.add('mostrar-pines');
+                document.getElementById('texto-titulo-sos').innerHTML = "<i class='fa-solid fa-circle-exclamation'></i> ¡VETERINARIAS DETECTADAS!";
+                document.getElementById('texto-desc-sos').innerText = "Tocá una clínica para derivar el historial de Simón de inmediato.";
+            }, 1800));
+        }
+
+        function seleccionarClinica(nombreClinica) {
+            // Cuando el usuario toca una veterinaria en el mapa interactivo
+            document.getElementById('titulo-notif').innerText = "¡Derivado a " + nombreClinica + "!";
+            document.getElementById('desc-notif').innerText = "Historial médico y QR enviados con éxito.";
+            
+            // Mostramos notificación de éxito
+            document.getElementById('noti-encontrado').classList.add('mostrar');
+            document.getElementById('texto-titulo-sos').innerHTML = "<i class='fa-solid fa-check'></i> DERIVACIÓN CONFIRMADA";
+            document.getElementById('texto-titulo-sos').style.color = "var(--success)";
+            document.getElementById('texto-desc-sos').innerText = "La clínica ya está recibiendo a Simón.";
+
+            // A los 3 segundos de elegir la clínica, pasa al Outro final de la marca
+            timelineUrgencia.push(setTimeout(() => {
+                document.getElementById('app-outro').classList.add('mostrar');
+            }, 3000));
+
+            // A los 6 segundos, se reinicia el ciclo completo para volver a empezar
+            timelineUrgencia.push(setTimeout(() => {
+                resetearTodo();
+            }, 6000));
+        }
+
+        function abortarSimulacion() {
+            timelineUrgencia.forEach(t => clearTimeout(t));
+            timelineUrgencia = [];
+            resetearTodo();
+        }
+
+        function resetearTodo() {
+            document.getElementById('app-normal').style.opacity = '1';
+            document.getElementById('app-sos').style.opacity = '0';
+            document.getElementById('app-sos').style.pointerEvents = 'none';
+            document.getElementById('app-outro').classList.remove('mostrar');
+            
+            document.getElementById('mapa-radar').classList.remove('mostrar-pines');
+            document.getElementById('noti-encontrado').classList.remove('mostrar');
+            
+            document.getElementById('texto-titulo-sos').innerHTML = "<i class='fa-solid fa-radar'></i> BUSCANDO VETERINARIAS";
+            document.getElementById('texto-titulo-sos').style.color = "var(--danger)";
+            document.getElementById('texto-desc-sos').innerText = "Detectando centros de la Red Bepy cercanos...";
+        }
+    </script>
+</body>
+</html>

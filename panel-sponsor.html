@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bepy Sponsor Portal - Inteligencia Corporativa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { --bg-dark: #090d16; --panel: #111827; --border: #1f2937; --text: #f9fafb; --gold: #d97706; --primary: #0ea5e9; --success: #10b981; --danger: #ef4444; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text); padding: 25px; margin: 0; display: flex; justify-content: center; }
+        
+        .dashboard { max-width: 1200px; width: 100%; }
+        
+        /* CABECERA CORPORATIVA */
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--panel); padding: 25px 35px; border-radius: 16px; border: 1px solid var(--border); border-left: 6px solid var(--gold); box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 25px; }
+        .header h1 { margin: 0; font-size: 1.8rem; display: flex; align-items: center; gap: 12px; }
+        .badge-sponsor { background: rgba(217, 119, 6, 0.15); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--gold); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-salir { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-salir:hover { background: var(--danger); color: white; }
+
+        /* TARJETAS DE MÉTRICAS B2B */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .metric-card { background: var(--panel); border: 1px solid var(--border); padding: 25px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .metric-card.gold::before { background: var(--gold); }
+        .metric-card.success::before { background: var(--success); }
+        
+        .metric-card h3 { margin: 0; font-size: 2.2rem; color: var(--text); }
+        .metric-card p { margin: 5px 0 0 0; color: #9ca3af; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-card i { position: absolute; top: 25px; right: 25px; font-size: 2rem; color: rgba(255,255,255,0.05); }
+
+        /* CONTENEDORES DE SECCIONES */
+        .grid-contenido { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        @media(max-width: 900px) { .grid-contenido { grid-template-columns: 1fr; } }
+        
+        .seccion-panel { background: var(--panel); border: 1px solid var(--border); padding: 25px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .seccion-panel h2 { margin-top: 0; font-size: 1.2rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+
+        /* TABLA DE SMART SAMPLING */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+        th, td { padding: 14px 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { color: #9ca3af; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        tr:hover { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .badge-estado { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+
+        /* ALERTA EPIDEMIOLÓGICA (BIG DATA) */
+        .alerta-epi { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; display: flex; gap: 15px; align-items: flex-start; }
+        .alerta-epi i { color: var(--danger); font-size: 1.3rem; margin-top: 2px; }
+        .alerta-epi h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: #fca5a5; }
+        .alerta-epi p { margin: 0; font-size: 0.85rem; color: #9ca3af; line-height: 1.4; }
+
+        .chart-wrapper { position: relative; height: 280px; width: 100%; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- CABECERA -->
+    <div class="header">
+        <div>
+            <h1><i class="fa-solid fa-briefcase" style="color: var(--gold);"></i> Eukanuba Global <span class="badge-sponsor">Socio Estratégico B2B</span></h1>
+            <p style="margin:5px 0 0 0; color:#9ca3af; font-size: 0.9rem;">Panel de Inteligencia de Mercado, Trazabilidad y Smart Sampling</p>
+        </div>
+        <button id="btn-salir" class="btn-salir">Cerrar Sesión</button>
+    </div>
+
+    <!-- MÉTRICAS DE IMPACTO B2B -->
+    <div class="metrics-grid">
+        <div class="metric-card gold">
+            <i class="fa-solid fa-box-open"></i>
+            <h3 id="stat-kits">4,820</h3>
+            <p>Kits Smart Sampling Entregados</p>
+        </div>
+        <div class="metric-card success">
+            <i class="fa-solid fa-truck-fast"></i>
+            <h3 id="stat-suscripciones">1,350</h3>
+            <p>Suscripciones Alimento Puerta a Puerta</p>
+        </div>
+        <div class="metric-card">
+            <i class="fa-solid fa-chart-pie"></i>
+            <h3>94.2%</h3>
+            <p>Tasa de Retención de Marca (LTV)</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL DIVIDIDO -->
+    <div class="grid-contenido">
+        
+        <!-- COLUMNA IZQUIERDA: GRÁFICO Y TRAZABILIDAD -->
+        <div class="seccion-panel">
+            <h2><i class="fa-solid fa-chart-column" style="color: var(--primary);"></i> Conversión de Muestras a Clientes Fijos</h2>
+            <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 0;">Impacto de los kits entregados en veterinarias de la red sobre las compras mensuales recurrentes.</p>
+            
+            <div class="chart-wrapper">
+                <canvas id="graficoSponsors"></canvas>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: BIG DATA EPIDEMIOLÓGICO -->
+        <div class="seccion-panel">
+            <h2><i class="fa-solid fa-radar" style="color: var(--gold);"></i> Alertas de Demanda (Big Data)</h2>
+            <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 0;">Reportes anónimos procesados por el motor clínico de Bepy.</p>
+            
+            <div class="alerta-epi">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <h4>Costa Atlántica (Mar Azul / Gesell)</h4>
+                    <p>Aumento del 34% en consultas por cuidados dermatológicos estivales. Oportunidad para stockear alimento "Derm Defense".</p>
+                </div>
+            </div>
+
+            <div class="alerta-epi" style="border-color: rgba(14, 165, 233, 0.3); background: rgba(14, 165, 233, 0.05);">
+                <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i>
+                <div>
+                    <h4>La Plata (Zona Norte)</h4>
+                    <p>Alta concentración de cachorros registrados en planes premium. Tendencia alcista en la línea "Puppy Medium".</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SECCIÓN INFERIOR: ÚLTIMAS VALIDACIONES DE SMART SAMPLING -->
+    <div class="seccion-panel" style="margin-top: 25px;">
+        <h2><i class="fa-solid fa-qrcode" style="color: var(--success);"></i> Trazabilidad en Tiempo Real (Escaneos en Veterinarias)</h2>
+        <p style="color: #9ca3af; font-size: 0.85rem; margin-top: 0;">Registro instantáneo de cada usuario que retiró su beneficio patrocinado.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha / Hora</th>
+                    <th>Punto de Retiro (Veterinaria)</th>
+                    <th>Producto Entregado</th>
+                    <th>Estado de Conversión</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-muestras">
+                <tr>
+                    <td>Hoy, 18:42 hs</td>
+                    <td>Clínica Vet. San Roque (La Plata)</td>
+                    <td>Kit Cachorro Eukanuba 3kg</td>
+                    <td><span class="badge-estado">Validado & Suscripto</span></td>
+                </tr>
+                <tr>
+                    <td>Hoy, 16:15 hs</td>
+                    <td>Consultorio Del Bosque (Mar Azul)</td>
+                    <td>Muestra Senior 1.5kg</td>
+                    <td><span class="badge-estado">Validado en Red</span></td>
+                </tr>
+                <tr>
+                    <td>Ayer, 11:20 hs</td>
+                    <td>Centro Veterinario Norte (San Nicolás)</td>
+                    <td>Kit Cachorro Eukanuba 3kg</td>
+                    <td><span class="badge-estado">Validado & Suscripto</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => { 
+        if (!user) window.location.href = "index.html"; 
+    });
+
+    document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+    // Renderizado del Gráfico Corporativo con Chart.js
+    const ctx = document.getElementById('graficoSponsors').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Kits Retirados',
+                data: [450, 720, 1100, 1850, 3100, 4820],
+                borderColor: '#0ea5e9',
+                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Conversión a Compra Recurrente',
+                data: [120, 210, 380, 590, 920, 1350],
+                borderColor: '#d97706',
+                backgroundColor: 'transparent',
+                borderWidth: 3,
+                tension: 0.4
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#f9fafb' } } },
+            scales: {
+                x: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } },
+                y: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } }
+            }
+        }
+    });
+</script>
+</body>
+</html>
