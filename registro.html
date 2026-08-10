@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bepy | Registro Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0ea5e9; --dark: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .registro-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .input-form { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
+        .btn-reg { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="registro-card">
+    <h2>Registrarse en Bepy</h2>
+    <input type="email" id="reg-email" class="input-form" placeholder="Correo Electrónico">
+    <input type="password" id="reg-pass" class="input-form" placeholder="Contraseña">
+    
+    <label>Soy:</label>
+    <select id="reg-role" class="input-form" onchange="toggleExtraFields()">
+        <option value="dueño">Dueño de mascota</option>
+        <option value="profesional">Veterinario/Profesional</option>
+        <option value="prestador">Comercio (Petshop/Guardería)</option>
+    </select>
+
+    <!-- Campos extras ocultos -->
+    <div id="extra-prof" style="display:none;">
+        <input type="text" id="reg-matricula" class="input-form" placeholder="Matrícula Profesional">
+    </div>
+    <div id="extra-prest" style="display:none;">
+        <input type="text" id="reg-comercio" class="input-form" placeholder="Nombre del Comercio">
+        <select id="reg-tipo" class="input-form">
+            <option value="petshop">Pet Shop</option>
+            <option value="refugio">Refugio / Adopción</option>
+            <option value="paseador">Paseador</option>
+        </select>
+    </div>
+
+    <button id="btn-registrar" class="btn-reg">Crear Cuenta</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+
+    const db = getFirestore(initializeApp({ apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" }));
+    const auth = getAuth();
+
+    window.toggleExtraFields = () => {
+        const role = document.getElementById('reg-role').value;
+        document.getElementById('extra-prof').style.display = (role === 'profesional') ? 'block' : 'none';
+        document.getElementById('extra-prest').style.display = (role === 'prestador') ? 'block' : 'none';
+    };
+
+    document.getElementById('btn-registrar').addEventListener('click', async () => {
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+        const role = document.getElementById('reg-role').value;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+
+            // Guardamos en colección usuarios central
+            await setDoc(doc(db, "usuarios", user.uid), { email, role, fecha: new Date() });
+
+            // Si es prestador, guardamos datos específicos
+            if (role === 'prestador') {
+                await setDoc(doc(db, "prestadores", user.uid), {
+                    nombre_comercio: document.getElementById('reg-comercio').value,
+                    tipo: document.getElementById('reg-tipo').value,
+                    role: 'prestador'
+                });
+            }
+
+            alert("¡Registro exitoso! Ya sos parte de Bepy.");
+            window.location.href = "login.html";
+        } catch (e) { alert("Error: " + e.message); }
+    });
+</script>
+</body>
+</html>
