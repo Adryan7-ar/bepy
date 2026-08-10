@@ -104,6 +104,10 @@
         <div class="stat-card" id="btn-filtro-prestador" onclick="aplicarFiltroPrincipal('prestador')">
             <i class="fa-solid fa-store" style="color: var(--gold);"></i><h3 id="count-prestadores">0</h3><p>Comercios</p>
         </div>
+        <!-- NUEVO MÓDULO: ADOPCIONES (Colección 1) -->
+        <div class="stat-card" id="btn-filtro-adopciones" onclick="aplicarFiltroPrincipal('adopciones')">
+            <i class="fa-solid fa-paw" style="color: #f472b6;"></i><h3 id="count-adopciones">0</h3><p>Adopciones</p>
+        </div>
         <div class="stat-card" id="btn-filtro-mapa" onclick="aplicarFiltroPrincipal('mapa')">
             <i class="fa-solid fa-map-location-dot" style="color: #fca5a5;"></i><h3>Mapa</h3><p>Radar</p>
         </div>
@@ -143,7 +147,7 @@
         </div>
     </div>
 
-    <!-- BLOQUE 4: GOBIERNO CORPORATIVO (NUEVO) -->
+    <!-- BLOQUE 4: GOBIERNO CORPORATIVO -->
     <div class="seccion-titulo"><i class="fa-solid fa-building-user"></i> 4. Directorio y Equipo</div>
     <div class="stats-grid">
         <div class="stat-card" id="btn-filtro-equipo" onclick="aplicarFiltroPrincipal('equipo')">
@@ -155,6 +159,7 @@
     <div class="admin-tools">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2 id="titulo-seccion" style="margin-top: 0; color: var(--gold);"><i class="fa-solid fa-database"></i> Base de Datos Global</h2>
+            <!-- Este mensaje ahora se actualizará en tiempo real -->
             <p id="msj-carga" style="color: var(--success); font-weight: bold; margin: 0;">Sincronizando...</p>
         </div>
 
@@ -199,15 +204,17 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+    // IMPORTANTE: Cambiamos "firebase-firestore-lite.js" por "firebase-firestore.js" para poder usar onSnapshot (Tiempo Real)
+    import { getFirestore, collection, doc, deleteDoc, updateDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app, "bepy-data");
+    const db = getFirestore(app);
     const auth = getAuth(app);
 
     let listaUsuarios = []; 
+    let listaAdopciones = []; // Nueva lista para Colección 1
     let usuarioActualAdmin = null;
     let chartInstancia = null; 
     let filtroActualRol = 'usuario'; 
@@ -216,18 +223,21 @@
 
     onAuthStateChanged(auth, (user) => { 
         if (!user) window.location.href = "index.html"; 
-        else { usuarioActualAdmin = user; descargarDatos(); }
+        else { usuarioActualAdmin = user; iniciarEscuchaEnTiempoReal(); }
     });
     
     document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
 
-    async function descargarDatos() {
-        try {
-            const queryUsuarios = await getDocs(collection(db, "usuarios"));
+    // ==========================================
+    // ESCUCHA EN TIEMPO REAL (onSnapshot) - BLINDAJE
+    // ==========================================
+    function iniciarEscuchaEnTiempoReal() {
+        // Escucha a la colección Usuarios
+        onSnapshot(collection(db, "usuarios"), (snapshot) => {
             listaUsuarios = [];
             let cUsuarios = 0; let cProfesionales = 0; let cPrestadores = 0;
 
-            queryUsuarios.forEach((doc) => {
+            snapshot.forEach((doc) => {
                 const data = doc.data(); data.id = doc.id; listaUsuarios.push(data);
                 if (data.rol === "usuario") cUsuarios++;
                 else if (data.rol === "profesional") cProfesionales++;
@@ -238,9 +248,22 @@
             document.getElementById('count-profesionales').innerText = cProfesionales;
             document.getElementById('count-prestadores').innerText = cPrestadores;
             
-            document.getElementById('msj-carga').innerText = "";
-            aplicarFiltroPrincipal('usuario'); 
-        } catch (error) { console.error(error); }
+            document.getElementById('msj-carga').innerHTML = "🟢 Sincronizado en Tiempo Real";
+            
+            // Si estamos en una pestaña de usuarios, redibujamos la tabla para que se actualice sola
+            if (['usuario', 'profesional', 'prestador'].includes(filtroActualRol)) {
+                dibujarTabla();
+            }
+        }, (error) => { console.error("Error en tiempo real:", error); });
+
+        // Escucha a la colección Adopciones (Colección 1)
+        onSnapshot(collection(db, "adopciones"), (snapshot) => {
+            listaAdopciones = [];
+            snapshot.forEach(doc => { const d = doc.data(); d.id = doc.id; listaAdopciones.push(d); });
+            document.getElementById('count-adopciones').innerText = snapshot.size;
+            
+            if(filtroActualRol === 'adopciones') dibujarTablaAdopciones();
+        });
     }
 
     // ==========================================
@@ -406,12 +429,37 @@
         if (filtro === 'ia') { subtitulo.innerHTML = 'I.A. Predictiva'; contContenido.innerHTML = `<p style="color:var(--accent);">Motor Predictivo Activo analizando patrones.</p>`; return; }
         if (filtro === 'b2b') { subtitulo.innerHTML = 'Gestor B2B Sponsors'; contContenido.innerHTML = `<p style="color:var(--accent);">Campañas de marcas globales (Purina, Bravecto) en curso.</p>`; return; }
 
+        // ADOPCIONES (Nuevo Módulo)
+        if (filtro === 'adopciones') {
+            subtitulo.innerHTML = '<i class="fa-solid fa-paw"></i> Red de Adopciones Bepy';
+            contContenido.innerHTML = `<table id="tabla-datos"><thead id="tabla-head"></thead><tbody id="tabla-body"></tbody></table>`;
+            dibujarTablaAdopciones();
+            return;
+        }
+
         // TABLAS BASE DE USUARIOS (CRUD con Firebase)
         contContenido.innerHTML = `<table id="tabla-datos"><thead id="tabla-head"></thead><tbody id="tabla-body"></tbody></table>`;
         if (filtro === 'usuario') { subtitulo.innerHTML = '<i class="fa-solid fa-users"></i> Base de Dueños'; menuPlanes.style.display = 'flex'; } 
         else if (filtro === 'profesional') { subtitulo.innerHTML = '<i class="fa-solid fa-user-doctor"></i> Base de Veterinarios'; } 
         else if (filtro === 'prestador') { subtitulo.innerHTML = '<i class="fa-solid fa-store"></i> Base de Comercios'; } 
         dibujarTabla();
+    }
+
+    // ==========================================
+    // DIBUJAR TABLA DE ADOPCIONES
+    // ==========================================
+    window.dibujarTablaAdopciones = function() {
+        const thead = document.getElementById('tabla-head'); const tbody = document.getElementById('tabla-body');
+        thead.innerHTML = `<tr><th>Mascota</th><th>Refugio</th><th>Estado</th><th>Fecha</th></tr>`;
+        tbody.innerHTML = "";
+        
+        if(listaAdopciones.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">No hay adopciones registradas.</td></tr>`; return; }
+        
+        listaAdopciones.forEach(a => {
+            const fecha = a.fecha_publicacion ? new Date(a.fecha_publicacion).toLocaleDateString() : 'N/A';
+            const badgeEstado = a.estado === 'disponible' ? '<span class="badge badge-ok">Disponible</span>' : '<span class="badge badge-gratis">Adoptado</span>';
+            tbody.innerHTML += `<tr><td style="font-weight:bold;">${a.mascota_nombre}</td><td>${a.refugio_nombre || 'N/A'}</td><td>${badgeEstado}</td><td>${fecha}</td></tr>`;
+        });
     }
 
     // ==========================================
@@ -426,23 +474,25 @@
 
     function dibujarTabla() {
         const thead = document.getElementById('tabla-head'); const tbody = document.getElementById('tabla-body');
-        thead.innerHTML = `<tr><th>Email</th><th>Rol</th><th>Plan</th><th style="text-align: right;">Acciones</th></tr>`; tbody.innerHTML = "";
+        // SE AGREGÓ LA COLUMNA "LOCALIDAD"
+        thead.innerHTML = `<tr><th>Email</th><th>Rol</th><th>Localidad</th><th>Plan</th><th style="text-align: right;">Acciones</th></tr>`; tbody.innerHTML = "";
         
         let filtrados = listaUsuarios.filter(u => u.rol === filtroActualRol);
         if(filtroActualPlan !== 'todos') filtrados = filtrados.filter(u => (u.plan || 'gratis') === filtroActualPlan);
-        if(filtrados.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">No hay registros.</td></tr>`; return; }
+        if(filtrados.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">No hay registros.</td></tr>`; return; }
         
         filtrados.forEach(u => {
             const planText = u.plan || 'gratis'; const badgeClass = planText === 'premium' ? 'badge-premium' : 'badge-gratis';
+            const loc = u.localidad || 'Sin definir'; // Muestra la localidad
             let botonesHTML = u.rol === "admin" ? `<span style="color: #64748b; font-size: 0.8rem;">Protegido</span>` : `<button class="btn-accion btn-editar" onclick="abrirModal('${u.id}', '${u.email}', '${u.rol}', '${planText}')"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn-accion btn-borrar" onclick="borrarUsuario('${u.id}', '${u.email}')"><i class="fa-solid fa-trash-can"></i></button>`;
-            tbody.innerHTML += `<tr><td style="font-weight: bold;">${u.email}</td><td style="text-transform: capitalize;">${u.rol}</td><td><span class="badge ${badgeClass}">${planText}</span></td><td style="text-align: right;">${botonesHTML}</td></tr>`;
+            tbody.innerHTML += `<tr><td style="font-weight: bold;">${u.email}</td><td style="text-transform: capitalize;">${u.rol}</td><td>${loc}</td><td><span class="badge ${badgeClass}">${planText}</span></td><td style="text-align: right;">${botonesHTML}</td></tr>`;
         });
     }
 
     // Modal y Borrado de Firebase
     window.borrarUsuario = async function(id, email) { 
         if(confirm(`¿Eliminar ${email} de la base de datos?`)) { 
-            try { await deleteDoc(doc(db, "usuarios", id)); listaUsuarios = listaUsuarios.filter(u => u.id !== id); dibujarTabla(); } 
+            try { await deleteDoc(doc(db, "usuarios", id)); /* Al usar onSnapshot, la tabla se actualiza sola */ } 
             catch (error) { alert("Error: " + error.message); } 
         } 
     };
@@ -450,7 +500,7 @@
     const modal = document.getElementById('modal-editar');
     window.abrirModal = function(id, email, rol, plan) { usuarioEnEdicionId = id; document.getElementById('edit-email').innerText = email; document.getElementById('edit-rol').value = rol; document.getElementById('edit-plan').value = plan; modal.style.display = 'flex'; };
     document.getElementById('btn-cerrar-modal').addEventListener('click', () => modal.style.display = 'none');
-    document.getElementById('btn-guardar-cambios').addEventListener('click', async () => { const nR = document.getElementById('edit-rol').value; const nP = document.getElementById('edit-plan').value; const btn = document.getElementById('btn-guardar-cambios'); btn.innerText = "Guardando..."; btn.disabled = true; try { await updateDoc(doc(db, "usuarios", usuarioEnEdicionId), { rol: nR, plan: nP }); const uM = listaUsuarios.find(u => u.id === usuarioEnEdicionId); if(uM) { uM.rol = nR; uM.plan = nP; } modal.style.display = 'none'; btn.innerText = 'Guardar Cambios'; btn.disabled = false; dibujarTabla(); } catch (error) { alert("Error"); btn.disabled = false; } });
+    document.getElementById('btn-guardar-cambios').addEventListener('click', async () => { const nR = document.getElementById('edit-rol').value; const nP = document.getElementById('edit-plan').value; const btn = document.getElementById('btn-guardar-cambios'); btn.innerText = "Guardando..."; btn.disabled = true; try { await updateDoc(doc(db, "usuarios", usuarioEnEdicionId), { rol: nR, plan: nP }); modal.style.display = 'none'; btn.innerText = 'Guardar Cambios'; btn.disabled = false; /* La tabla se actualiza sola por onSnapshot */ } catch (error) { alert("Error"); btn.disabled = false; } });
 
     // ==========================================
     // EXPORTACIÓN PDF Y BÚSQUEDA FORENSE
