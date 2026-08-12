@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bepy | Laboratorio de Datos (Sandbox)</title>
+    <title>Bepy | Laboratorio de Datos (Costa Atlántica)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --primary: #38bdf8; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
@@ -17,9 +17,12 @@
         
         /* Panel de Controles */
         .controls { flex: 1; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .controls h3 { margin-top: 0; border-bottom: 1px dashed #475569; padding-bottom: 10px; color: var(--warning); }
+        .controls h3 { margin-top: 0; border-bottom: 1px dashed #475569; padding-bottom: 10px; color: var(--warning); display: flex; align-items: center; gap: 10px; }
         
-        .btn-seed { background: #334155; color: var(--text); border: 1px solid #475569; padding: 12px 15px; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; text-align: left; }
+        .control-row { display: flex; gap: 10px; align-items: center; }
+        .input-cant { width: 60px; background: #0f172a; border: 1px solid #475569; color: white; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 1rem; text-align: center; }
+        
+        .btn-seed { flex-grow: 1; background: #334155; color: var(--text); border: 1px solid #475569; padding: 12px 15px; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; text-align: left; }
         .btn-seed:hover { background: var(--primary); color: #0f172a; border-color: var(--primary); }
         .btn-seed i { font-size: 1.2rem; width: 25px; text-align: center; }
 
@@ -42,198 +45,188 @@
 
     <div class="header">
         <h1><i class="fa-solid fa-flask-vial"></i> Bepy Sandbox</h1>
-        <p>Laboratorio de Inyección de Datos (Seeder) • Entorno de Pruebas</p>
+        <p>Entorno de Pruebas • Focalizado en la Costa Atlántica</p>
     </div>
 
     <div class="sandbox-container">
-        
-        <!-- CONTROLES -->
+        <!-- CONTROLES CON CONTADORES -->
         <div class="controls">
-            <h3><i class="fa-solid fa-users"></i> Comunidad (Dueños y Mascotas)</h3>
-            <button class="btn-seed" id="btn-seed-usuarios"><i class="fa-solid fa-user-plus"></i> Generar 10 Usuarios (con 1 mascota c/u)</button>
-            <button class="btn-seed" id="btn-seed-sos"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);"></i> Simular Alerta SOS Aleatoria</button>
+            <h3><i class="fa-solid fa-users"></i> Dueños y Mascotas</h3>
+            <div class="control-row">
+                <input type="number" id="cant-usuarios" class="input-cant" value="1" min="1" max="50">
+                <button class="btn-seed" id="btn-seed-usuarios"><i class="fa-solid fa-user-plus"></i> Generar Usuarios</button>
+            </div>
             
             <h3 style="margin-top: 15px;"><i class="fa-solid fa-store"></i> Red Comercial</h3>
-            <button class="btn-seed" id="btn-seed-comercios"><i class="fa-solid fa-shop"></i> Generar 5 Comercios/Veterinarias (Zona Local)</button>
+            <div class="control-row">
+                <input type="number" id="cant-comercios" class="input-cant" value="1" min="1" max="20">
+                <button class="btn-seed" id="btn-seed-comercios"><i class="fa-solid fa-shop"></i> Generar Comercios/Vetes</button>
+            </div>
             
-            <h3 style="margin-top: 15px;"><i class="fa-solid fa-paw"></i> Adopciones (Colección 1)</h3>
-            <button class="btn-seed" id="btn-seed-adopciones"><i class="fa-solid fa-heart" style="color:#f472b6;"></i> Publicar 3 Mascotas en Adopción</button>
+            <h3 style="margin-top: 15px;"><i class="fa-solid fa-heart" style="color:#f472b6;"></i> Adopciones</h3>
+            <div class="control-row">
+                <input type="number" id="cant-adopciones" class="input-cant" value="1" min="1" max="20">
+                <button class="btn-seed" id="btn-seed-adopciones"><i class="fa-solid fa-paw"></i> Publicar Mascotas</button>
+            </div>
             
-            <h3 style="margin-top: 15px; color:var(--danger);"><i class="fa-solid fa-fire"></i> Estrés del Sistema</h3>
-            <button class="btn-seed" id="btn-seed-masivo"><i class="fa-solid fa-rocket"></i> Inyección Masiva (Todo a la vez)</button>
+            <h3 style="margin-top: 15px;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);"></i> Emergencias</h3>
+            <div class="control-row">
+                <input type="number" id="cant-sos" class="input-cant" value="1" min="1" max="5">
+                <button class="btn-seed" id="btn-seed-sos" style="border-color: var(--danger);"><i class="fa-solid fa-satellite-dish" style="color:var(--danger);"></i> Simular Alertas S.O.S</button>
+            </div>
+            
+            <h3 style="margin-top: 15px; color:var(--primary);"><i class="fa-solid fa-rocket"></i> Inyección Controlada</h3>
+            <button class="btn-seed" id="btn-seed-masivo" style="width: 100%; justify-content: center; background: var(--primary); color: var(--bg);"><i class="fa-solid fa-bolt"></i> Inyectar Exactamente 5 de Todo</button>
         </div>
 
         <!-- TERMINAL DE LOGS -->
         <div class="terminal">
             <div class="terminal-header">
-                <span><i class="fa-solid fa-terminal"></i> Terminal_Bepy_DB_v1.0</span>
+                <span><i class="fa-solid fa-terminal"></i> Terminal_Bepy_Costa_v2.0</span>
                 <button id="btn-limpiar-terminal">Limpiar</button>
             </div>
             <div id="pantalla-terminal" style="flex-grow: 1; overflow-y: auto;">
-                <div class="log-line log-system">Bepy Sandbox Inicializado. Esperando comandos...</div>
+                <div class="log-line log-system">Bepy Sandbox Inicializado. Operando solo en Costa Atlántica...</div>
             </div>
         </div>
-
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, doc, setDoc, getDocs, updateDoc, query, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, setDoc, getDocs, updateDoc, query, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // CONEXIÓN A TU BASE DE DATOS
         const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app, "bepy-data"); // BLINDADO A LA MISMA BASE
+        const db = getFirestore(app, "bepy-data");
 
-        // SISTEMA DE LOGS EN PANTALLA
         const terminal = document.getElementById('pantalla-terminal');
         function log(mensaje, tipo = 'info') {
             const hora = new Date().toLocaleTimeString('es-AR');
             const div = document.createElement('div');
-            div.className = `log-line log-${tipo}`;
-            div.innerHTML = `[${hora}] > ${mensaje}`;
-            terminal.appendChild(div);
-            terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
+            div.className = `log-line log-${tipo}`; div.innerHTML = `[${hora}] > ${mensaje}`;
+            terminal.appendChild(div); terminal.scrollTop = terminal.scrollHeight;
         }
         document.getElementById('btn-limpiar-terminal').addEventListener('click', () => terminal.innerHTML = '');
 
-        // ============================================================
-        // DICCIONARIOS DE DATOS REALISTAS
-        // ============================================================
-        const localidades = ["La Plata", "City Bell", "Villa Elisa", "Gonnet", "Los Hornos", "Tolosa", "Ensenada", "Berisso", "Mar del Plata", "Santa Teresita"];
-        const nombresPersonas = ["Martina", "Lucas", "Camila", "Joaquín", "Sofía", "Mateo", "Valentina", "Facundo", "Agustina", "Santiago"];
-        const apellidos = ["García", "Rodríguez", "López", "Fernández", "González", "Pérez", "Gómez", "Sánchez", "Díaz", "Romero"];
-        const nombresPerros = ["Simón", "Milo", "Coco", "Rocco", "Toby", "Olivia", "Luna", "Lola", "Mía", "Nala"];
-        const nombresGatos = ["Michi", "Salem", "Tom", "Oliver", "Félix", "Kitty", "Nina", "Pelusa", "Simba", "Garfield"];
-        const razasPerros = ["Mestizo", "Caniche", "Labrador", "Golden", "Bulldog", "Beagle", "Boxer", "Pug", "Dachshund"];
-        const comercios = ["PetShop El Hueso", "Veterinaria San Roque", "Peluquería Canina Guau", "Refugio Patitas", "Alimentos Mascotas VIP", "Clínica Veterinaria Central", "Paseos Felices"];
+        // DICCIONARIOS CON COORDENADAS COSTERAS (Para que el mapa funcione)
+        const ubicacionesCosta = [
+            { nombre: "Mar Azul", lat: -37.3333, lng: -57.0333 },
+            { nombre: "Mar de las Pampas", lat: -37.3236, lng: -57.0125 },
+            { nombre: "Santa Teresita", lat: -36.5414, lng: -56.7214 },
+            { nombre: "Mar del Tuyú", lat: -36.5744, lng: -56.6917 },
+            { nombre: "San Bernardo", lat: -36.6833, lng: -56.6833 },
+            { nombre: "Pinamar", lat: -37.1097, lng: -56.8614 }
+        ];
 
-        // Funciones Helper
+        const nombresPersonas = ["Martina", "Lucas", "Camila", "Joaquín", "Sofía", "Mateo", "Valentina", "Facundo"];
+        const apellidos = ["García", "Rodríguez", "López", "Fernández", "González", "Pérez"];
+        const nombresPerros = ["Simón", "Milo", "Coco", "Rocco", "Toby", "Luna", "Nala"];
+        const comercios = ["PetShop El Ancla", "Veterinaria Costa Vet", "Peluquería Playa", "Refugio Mar", "Alimentos La Costa"];
+
         const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
         const randomNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
         const generarIdUnico = () => "UID-" + Math.random().toString(36).substring(2, 12).toUpperCase();
-        const generarCodigoBepy = () => "BEPY-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-        // ============================================================
-        // FUNCIONES DE INYECCIÓN (SEEDERS)
-        // ============================================================
-
-        // 1. GENERAR USUARIOS Y MASCOTAS
+        // 1. GENERAR USUARIOS
         async function seedUsuarios(cantidad) {
-            log(`Iniciando generación de ${cantidad} usuarios...`, 'warn');
+            log(`Generando ${cantidad} usuarios costeros...`, 'warn');
             for (let i = 0; i < cantidad; i++) {
-                const nombre = random(nombresPersonas);
-                const apellido = random(apellidos);
-                const email = `${nombre.toLowerCase()}.${apellido.toLowerCase()}${randomNum(1,99)}@sandbox.com`;
-                const loc = random(localidades);
+                const nombre = random(nombresPersonas); const apellido = random(apellidos);
+                const locData = random(ubicacionesCosta);
+                // Le damos una leve variación a las coordenadas para que no se pisen exactos en el mapa
+                const latVariacion = locData.lat + (Math.random() - 0.5) * 0.01;
+                const lngVariacion = locData.lng + (Math.random() - 0.5) * 0.01;
                 const uid = generarIdUnico();
 
                 try {
-                    // Crea Usuario
                     await setDoc(doc(db, "usuarios", uid), {
-                        email: email, nombre: `${nombre} ${apellido}`, rol: "usuario", localidad: loc, plan: random(["gratis", "premium"]), fecha_registro: new Date()
+                        email: `${nombre.toLowerCase()}${randomNum(1,99)}@costa.com`, 
+                        nombre: `${nombre} ${apellido}`, rol: "usuario", 
+                        localidad: locData.nombre, lat: latVariacion, lng: lngVariacion, 
+                        plan: "gratis", fecha_registro: new Date()
                     });
                     
-                    // Crea Mascota para ese usuario
-                    const especie = random(["perro", "gato"]);
-                    const nombreMascota = especie === "perro" ? random(nombresPerros) : random(nombresGatos);
-                    const raza = especie === "perro" ? random(razasPerros) : "Mestizo Europeo";
-                    const codigo = generarCodigoBepy();
-
                     await addDoc(collection(db, "mascotas"), {
-                        dueño_uid: uid, nombre: nombreMascota, especie: especie, raza: raza, edad: randomNum(1, 12), peso: randomNum(3, 35), reproduccion: random(["castrado", "entero"]), codigo_bepy: codigo, estado_sos: false, fecha_creacion: new Date()
+                        dueño_uid: uid, nombre: random(nombresPerros), especie: "perro", raza: "Mestizo", 
+                        edad: randomNum(1, 12), codigo_bepy: "BEPY-" + randomNum(1000,9999), estado_sos: false
                     });
-
-                    log(`Usuario Creado: ${email} (Plan: ${loc}) -> Mascota: ${nombreMascota} (${codigo})`, 'success');
-                } catch (e) { log(`Error creando usuario ${email}: ${e.message}`, 'error'); }
+                    log(`Usuario en ${locData.nombre} creado.`, 'success');
+                } catch (e) { log(`Error: ${e.message}`, 'error'); }
             }
-            log(`Lote de ${cantidad} usuarios finalizado.`, 'system');
         }
 
-        // 2. GENERAR COMERCIOS / VETERINARIAS
+        // 2. GENERAR COMERCIOS
         async function seedComercios(cantidad) {
-            log(`Iniciando generación de ${cantidad} prestadores...`, 'warn');
+            log(`Generando ${cantidad} comercios costeros...`, 'warn');
             for (let i = 0; i < cantidad; i++) {
-                const nombreComercio = random(comercios) + " " + randomNum(1,100);
-                const tipo = nombreComercio.includes("Vet") || nombreComercio.includes("Clínica") ? "profesional" : "prestador";
-                const rubro = tipo === "profesional" ? "veterinaria" : random(["petshop", "paseador", "guarderia"]);
-                const loc = random(localidades);
-                const email = `contacto@${nombreComercio.replace(/\s+/g, '').toLowerCase()}.com`;
+                const nombreComercio = random(comercios) + " " + randomNum(1,10);
+                const locData = random(ubicacionesCosta);
+                const latVariacion = locData.lat + (Math.random() - 0.5) * 0.01;
+                const lngVariacion = locData.lng + (Math.random() - 0.5) * 0.01;
                 const uid = generarIdUnico();
 
                 try {
-                    // Guarda en base maestra
-                    await setDoc(doc(db, "usuarios", uid), { email: email, rol: tipo, localidad: loc, fecha_registro: new Date() });
-                    // Guarda en colección específica
-                    const colName = tipo === "profesional" ? "profesionales" : "prestadores";
-                    await setDoc(doc(db, colName, uid), { email: email, nombre_comercio: nombreComercio, tipo: rubro, localidad: loc });
-
-                    log(`Comercio Creado: ${nombreComercio} [${tipo.toUpperCase()}] en ${loc}`, 'success');
-                } catch (e) { log(`Error creando comercio: ${e.message}`, 'error'); }
+                    await setDoc(doc(db, "usuarios", uid), { 
+                        email: `vet@${nombreComercio.replace(/\s+/g, '').toLowerCase()}.com`, 
+                        rol: "profesional", localidad: locData.nombre, 
+                        lat: latVariacion, lng: lngVariacion 
+                    });
+                    log(`Comercio ${nombreComercio} en ${locData.nombre} creado.`, 'success');
+                } catch (e) { log(`Error: ${e.message}`, 'error'); }
             }
-            log(`Lote de ${cantidad} comercios finalizado.`, 'system');
         }
 
-        // 3. GENERAR ADOPCIONES (Colección 1)
+        // 3. GENERAR ADOPCIONES
         async function seedAdopciones(cantidad) {
-            log(`Iniciando publicación de ${cantidad} mascotas en adopción...`, 'warn');
+            log(`Publicando ${cantidad} adopciones...`, 'warn');
             for (let i = 0; i < cantidad; i++) {
-                const especie = random(["perro", "gato"]);
-                const nombre = especie === "perro" ? random(nombresPerros) : random(nombresGatos);
-                const refugio = "Refugio " + random(apellidos);
-                
                 try {
                     await addDoc(collection(db, "adopciones"), {
-                        mascota_nombre: nombre, descripcion: "Mascota muy juguetona buscando hogar.", refugio_nombre: refugio, refugio_id: "UID-REFUGIO-TEST", estado: "disponible", fecha_publicacion: new Date().toISOString()
+                        mascota_nombre: random(nombresPerros), refugio_nombre: "Refugio " + random(ubicacionesCosta).nombre, 
+                        estado: "disponible", fecha_publicacion: new Date().toISOString()
                     });
-                    log(`Adopción Publicada: ${nombre} (${especie}) por ${refugio}`, 'success');
-                } catch (e) { log(`Error publicando adopción: ${e.message}`, 'error'); }
+                    log(`Adopción publicada con éxito.`, 'success');
+                } catch (e) { log(`Error: ${e.message}`, 'error'); }
             }
-            log(`Lote de ${cantidad} adopciones finalizado.`, 'system');
         }
 
-        // 4. SIMULAR EMERGENCIA (SOS)
-        async function simularSOS() {
-            log(`Buscando una mascota aleatoria para activar Alerta SOS...`, 'warn');
+        // 4. SIMULAR S.O.S (Buscando mascotas existentes y agregando coordenadas)
+        async function simularSOS(cantidad) {
+            log(`Activando ${cantidad} Alertas S.O.S...`, 'warn');
             try {
-                // Traemos una mascota cualquiera de la BD
-                const q = query(collection(db, "mascotas"), limit(10));
-                const snapshot = await getDocs(q);
-                if(snapshot.empty) { log("No hay mascotas en la BD. Generá usuarios primero.", "error"); return; }
+                const snapshot = await getDocs(query(collection(db, "mascotas"), limit(20)));
+                if(snapshot.empty) { log("No hay mascotas para perder. Generá usuarios.", "error"); return; }
                 
-                const randomDoc = snapshot.docs[Math.floor(Math.random() * snapshot.docs.length)];
-                const mascotaId = randomDoc.id;
-                const mascota = randomDoc.data();
-
-                if(mascota.estado_sos) { log(`${mascota.nombre} ya estaba en estado SOS. Intentá de nuevo.`, "system"); return; }
-
-                // Activamos SOS
-                await updateDoc(doc(db, "mascotas", mascotaId), { estado_sos: true });
-                await addDoc(collection(db, "alertas_sos"), { 
-                    mascota_id: mascotaId, dueño_email: "sandbox@tester.com", ubicacion: "Simulación - " + random(localidades), fecha_activacion: new Date(), estado: "Activa" 
-                });
-
-                log(`¡ALERTA SOS ACTIVADA! Mascota afectada: ${mascota.nombre} (Código: ${mascota.codigo_bepy})`, 'error');
-            } catch (e) { log(`Error simulando SOS: ${e.message}`, 'error'); }
+                let afectadas = 0;
+                for (let i = 0; i < snapshot.docs.length && afectadas < cantidad; i++) {
+                    const docMascota = snapshot.docs[i];
+                    if (!docMascota.data().estado_sos) {
+                        const locData = random(ubicacionesCosta);
+                        await updateDoc(doc(db, "mascotas", docMascota.id), { estado_sos: true });
+                        await addDoc(collection(db, "alertas_sos"), { 
+                            mascota_id: docMascota.id, mascota_nombre: docMascota.data().nombre,
+                            ubicacion: locData.nombre, lat: locData.lat, lng: locData.lng, 
+                            fecha_activacion: new Date(), estado: "Activa" 
+                        });
+                        log(`¡S.O.S! ${docMascota.data().nombre} reportado en ${locData.nombre}`, 'error');
+                        afectadas++;
+                    }
+                }
+            } catch (e) { log(`Error SOS: ${e.message}`, 'error'); }
         }
 
-        // ============================================================
-        // ASIGNACIÓN DE BOTONES
-        // ============================================================
-        document.getElementById('btn-seed-usuarios').addEventListener('click', () => seedUsuarios(10));
-        document.getElementById('btn-seed-comercios').addEventListener('click', () => seedComercios(5));
-        document.getElementById('btn-seed-adopciones').addEventListener('click', () => seedAdopciones(3));
-        document.getElementById('btn-seed-sos').addEventListener('click', () => simularSOS());
+        // ASIGNACIÓN DE BOTONES LEYENDO LOS INPUTS
+        document.getElementById('btn-seed-usuarios').addEventListener('click', () => seedUsuarios(parseInt(document.getElementById('cant-usuarios').value)));
+        document.getElementById('btn-seed-comercios').addEventListener('click', () => seedComercios(parseInt(document.getElementById('cant-comercios').value)));
+        document.getElementById('btn-seed-adopciones').addEventListener('click', () => seedAdopciones(parseInt(document.getElementById('cant-adopciones').value)));
+        document.getElementById('btn-seed-sos').addEventListener('click', () => simularSOS(parseInt(document.getElementById('cant-sos').value)));
         
+        // BOTÓN 5 EXACTOS
         document.getElementById('btn-seed-masivo').addEventListener('click', async () => {
-            log("--- INICIANDO INYECCIÓN MASIVA DE ESTRÉS ---", "warn");
-            await seedUsuarios(20);
-            await seedComercios(10);
-            await seedAdopciones(10);
-            log("--- INYECCIÓN MASIVA FINALIZADA ---", "success");
-            log("¡Abrí el Admin Panel CEO en otra pestaña para ver los resultados!", "info");
+            log("--- INYECTANDO EXACTAMENTE 5 DE CADA UNO ---", "warn");
+            await seedUsuarios(5); await seedComercios(5); await seedAdopciones(5); await simularSOS(5);
+            log("--- PROCESO FINALIZADO ---", "success");
         });
-
     </script>
 </body>
 </html>
