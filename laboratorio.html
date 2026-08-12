@@ -82,7 +82,7 @@
         <!-- TERMINAL DE LOGS -->
         <div class="terminal">
             <div class="terminal-header">
-                <span><i class="fa-solid fa-terminal"></i> Terminal_Bepy_Costa_v2.0</span>
+                <span><i class="fa-solid fa-terminal"></i> Terminal_Bepy_Costa_v2.1</span>
                 <button id="btn-limpiar-terminal">Limpiar</button>
             </div>
             <div id="pantalla-terminal" style="flex-grow: 1; overflow-y: auto;">
@@ -93,7 +93,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, doc, setDoc, getDocs, updateDoc, query, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, setDoc, getDocs, updateDoc, query, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
         const app = initializeApp(firebaseConfig);
@@ -108,7 +108,6 @@
         }
         document.getElementById('btn-limpiar-terminal').addEventListener('click', () => terminal.innerHTML = '');
 
-        // DICCIONARIOS CON COORDENADAS COSTERAS (Para que el mapa funcione)
         const ubicacionesCosta = [
             { nombre: "Mar Azul", lat: -37.3333, lng: -57.0333 },
             { nombre: "Mar de las Pampas", lat: -37.3236, lng: -57.0125 },
@@ -121,7 +120,7 @@
         const nombresPersonas = ["Martina", "Lucas", "Camila", "Joaquín", "Sofía", "Mateo", "Valentina", "Facundo"];
         const apellidos = ["García", "Rodríguez", "López", "Fernández", "González", "Pérez"];
         const nombresPerros = ["Simón", "Milo", "Coco", "Rocco", "Toby", "Luna", "Nala"];
-        const comercios = ["PetShop El Ancla", "Veterinaria Costa Vet", "Peluquería Playa", "Refugio Mar", "Alimentos La Costa"];
+        const comercios = ["PetShop El Ancla", "Veterinaria Costa Vet", "Peluquería Playa", "Refugio Mar", "Alimentos La Costa", "Clínica del Tuyú", "Paseos San Bernardo"];
 
         const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
         const randomNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -133,7 +132,6 @@
             for (let i = 0; i < cantidad; i++) {
                 const nombre = random(nombresPersonas); const apellido = random(apellidos);
                 const locData = random(ubicacionesCosta);
-                // Le damos una leve variación a las coordenadas para que no se pisen exactos en el mapa
                 const latVariacion = locData.lat + (Math.random() - 0.5) * 0.01;
                 const lngVariacion = locData.lng + (Math.random() - 0.5) * 0.01;
                 const uid = generarIdUnico();
@@ -155,23 +153,39 @@
             }
         }
 
-        // 2. GENERAR COMERCIOS
+        // 2. GENERAR COMERCIOS (¡CORREGIDO!)
         async function seedComercios(cantidad) {
-            log(`Generando ${cantidad} comercios costeros...`, 'warn');
+            log(`Generando ${cantidad} comercios/veterinarias costeros...`, 'warn');
             for (let i = 0; i < cantidad; i++) {
                 const nombreComercio = random(comercios) + " " + randomNum(1,10);
+                
+                // Lógica de separación corregida
+                const esVeterinaria = nombreComercio.includes("Vet") || nombreComercio.includes("Clínica");
+                const rolAsignado = esVeterinaria ? "profesional" : "prestador";
+                const rubroAsignado = esVeterinaria ? "veterinaria" : random(["petshop", "paseador", "guarderia"]);
+                const prefijoEmail = esVeterinaria ? "vet" : "comercio";
+
                 const locData = random(ubicacionesCosta);
                 const latVariacion = locData.lat + (Math.random() - 0.5) * 0.01;
                 const lngVariacion = locData.lng + (Math.random() - 0.5) * 0.01;
                 const uid = generarIdUnico();
 
                 try {
+                    // Guardamos en la base de usuarios principal con el ROL CORRECTO
                     await setDoc(doc(db, "usuarios", uid), { 
-                        email: `vet@${nombreComercio.replace(/\s+/g, '').toLowerCase()}.com`, 
-                        rol: "profesional", localidad: locData.nombre, 
+                        email: `${prefijoEmail}@${nombreComercio.replace(/\s+/g, '').toLowerCase()}.com`, 
+                        rol: rolAsignado, localidad: locData.nombre, 
                         lat: latVariacion, lng: lngVariacion 
                     });
-                    log(`Comercio ${nombreComercio} en ${locData.nombre} creado.`, 'success');
+
+                    // Guardamos en la colección que corresponde (profesionales o prestadores)
+                    const coleccionDestino = esVeterinaria ? "profesionales" : "prestadores";
+                    await setDoc(doc(db, coleccionDestino, uid), { 
+                        email: `${prefijoEmail}@${nombreComercio.replace(/\s+/g, '').toLowerCase()}.com`, 
+                        nombre_comercio: nombreComercio, tipo: rubroAsignado, localidad: locData.nombre 
+                    });
+
+                    log(`${rolAsignado.toUpperCase()} ${nombreComercio} en ${locData.nombre} creado.`, 'success');
                 } catch (e) { log(`Error: ${e.message}`, 'error'); }
             }
         }
@@ -190,7 +204,7 @@
             }
         }
 
-        // 4. SIMULAR S.O.S (Buscando mascotas existentes y agregando coordenadas)
+        // 4. SIMULAR S.O.S
         async function simularSOS(cantidad) {
             log(`Activando ${cantidad} Alertas S.O.S...`, 'warn');
             try {
