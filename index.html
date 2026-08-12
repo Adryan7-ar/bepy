@@ -295,7 +295,7 @@
     const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
+    const db = getFirestore(app, "bepy-data");
 
     // ==========================================
     // UI: MANEJO DE PESTAÑAS Y CAMPOS DINÁMICOS
