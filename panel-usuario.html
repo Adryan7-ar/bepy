@@ -70,6 +70,28 @@
 
         .btn-nueva-mascota { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(84, 178, 204, 0.4); }
         
+        /* =======================================================
+           NUEVO: ESTILOS PARA BENEFICIOS Y ADOPCIONES 
+           ======================================================= */
+        .header-seccion { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 15px; }
+        .header-seccion h3 { margin: 0; font-size: 1.2rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        .badge-localidad { background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .carrusel-horizontal { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory; }
+        .carrusel-horizontal::-webkit-scrollbar { height: 6px; }
+        .carrusel-horizontal::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .card-comercio { min-width: 220px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; scroll-snap-align: start; flex-shrink: 0; }
+        .card-comercio h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 1.1rem; text-transform: capitalize; }
+        .card-comercio p { margin: 0; color: #64748b; font-size: 0.85rem; text-transform: capitalize; }
+        
+        .card-adopcion { min-width: 180px; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; scroll-snap-align: start; flex-shrink: 0; display: flex; flex-direction: column; }
+        .adopcion-img { width: 100%; height: 120px; background: #fdf2f8; display: flex; justify-content: center; align-items: center; color: #fbcfe8; font-size: 3rem; }
+        .adopcion-info { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+        .adopcion-info h4 { margin: 0 0 5px 0; color: var(--dark); text-transform: capitalize; font-size: 1.1rem; }
+        .adopcion-info p { margin: 0; color: #64748b; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
+        .btn-adoptar { width: 100%; background: white; color: #db2777; border: 1px solid #db2777; padding: 8px; border-radius: 8px; font-weight: bold; margin-top: auto; cursor: pointer; transition: 0.2s; }
+        .btn-adoptar:hover { background: #db2777; color: white; }
+
         /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
@@ -161,6 +183,27 @@
         <div id="contenedor-credenciales">
             <p style="text-align: center; color: #64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> Sincronizando sistema...</p>
         </div>
+
+        <!-- =======================================================
+             SECCIÓN NUEVA: COMUNIDAD, BENEFICIOS Y ADOPCIONES 
+             ======================================================= -->
+        <div style="margin-top: 30px; width: 100%;">
+            <div class="header-seccion">
+                <h3><i class="fa-solid fa-tags" style="color: var(--warning);"></i> Beneficios en tu Zona</h3>
+                <span id="txt-localidad" class="badge-localidad"><i class="fa-solid fa-spinner fa-spin"></i></span>
+            </div>
+            <div id="carrusel-comercios" class="carrusel-horizontal">
+                <!-- Se inyectan comercios acá -->
+            </div>
+
+            <div class="header-seccion" style="margin-top: 25px;">
+                <h3><i class="fa-solid fa-heart" style="color: #db2777;"></i> Red de Adopción Bepy</h3>
+            </div>
+            <div id="carrusel-adopciones" class="carrusel-horizontal">
+                <!-- Se inyectan adopciones acá -->
+            </div>
+        </div>
+
     </div>
 
     <!-- MODAL SOS: REPORTAR PÉRDIDA -->
@@ -337,7 +380,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+        /* ACTUALIZACIÓN: Usamos firebase-firestore.js (versión completa) para permitir onSnapshot (Tiempo real) */
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
         const app = initializeApp(firebaseConfig);
@@ -348,9 +392,78 @@
         let datosMascotaAbierta = null; let vacunasParaPDF = [];
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "index.html"; else { usuarioActual = user; cargarMisMascotas(); }
+            if (!user) window.location.href = "index.html"; else { 
+                usuarioActual = user; 
+                cargarMisMascotas(); 
+                cargarDatosZonalesYAdopciones(user.uid); // NUEVA LLAMADA AL RADAR BEPY
+            }
         });
         document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+        // ==========================================
+        // NUEVO: CARGAR BENEFICIOS ZONALES Y ADOPCIONES
+        // ==========================================
+        async function cargarDatosZonalesYAdopciones(uid) {
+            try {
+                // 1. Obtener la localidad del usuario actual
+                const userDoc = await getDoc(doc(db, "usuarios", uid));
+                let localidadUsuario = "Sin definir";
+                if(userDoc.exists() && userDoc.data().localidad) {
+                    localidadUsuario = userDoc.data().localidad;
+                }
+                document.getElementById('txt-localidad').innerText = localidadUsuario;
+
+                // 2. Buscar Comercios (Prestadores) en su zona
+                const comerciosCont = document.getElementById('carrusel-comercios');
+                comerciosCont.innerHTML = "";
+                const qComercios = query(collection(db, "prestadores"), where("localidad", "==", localidadUsuario));
+                const resComercios = await getDocs(qComercios);
+                
+                if(resComercios.empty) {
+                    comerciosCont.innerHTML = `<p style="color:#94a3b8; font-size:0.9rem; padding: 10px;">Aún no hay comercios asociados en ${localidadUsuario}.</p>`;
+                } else {
+                    resComercios.forEach(docSnap => {
+                        const c = docSnap.data();
+                        comerciosCont.innerHTML += `
+                            <div class="card-comercio">
+                                <h4><i class="fa-solid fa-store"></i> ${c.nombre_comercio}</h4>
+                                <p><i class="fa-solid fa-map-pin"></i> ${c.localidad} • ${c.tipo}</p>
+                                <div style="margin-top: 10px; font-size: 0.8rem; color: var(--success); font-weight: bold; background: #dcfce7; padding: 5px; border-radius: 5px; text-align: center;">
+                                    <i class="fa-solid fa-tag"></i> 10% OFF con Bepy Premium
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // 3. Buscar Adopciones en tiempo real (Colección 1)
+                const adopcionesCont = document.getElementById('carrusel-adopciones');
+                const qAdop = query(collection(db, "adopciones"), where("estado", "==", "disponible"));
+                
+                onSnapshot(qAdop, (snapshot) => {
+                    adopcionesCont.innerHTML = "";
+                    if(snapshot.empty) {
+                        adopcionesCont.innerHTML = `<p style="color:#94a3b8; font-size:0.9rem; padding: 10px;">No hay mascotas en adopción en este momento.</p>`;
+                    } else {
+                        snapshot.forEach(docSnap => {
+                            const a = docSnap.data();
+                            adopcionesCont.innerHTML += `
+                                <div class="card-adopcion">
+                                    <div class="adopcion-img"><i class="fa-solid fa-paw"></i></div>
+                                    <div class="adopcion-info">
+                                        <h4>${a.mascota_nombre}</h4>
+                                        <p><i class="fa-solid fa-house"></i> ${a.refugio_nombre || 'Refugio Bepy'}</p>
+                                        <button class="btn-adoptar" onclick="alert('¡Gracias por tu interés! El refugio se pondrá en contacto al mail: ${usuarioActual.email}')">Quiero Adoptarlo</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("Error cargando comunidad:", error);
+            }
+        }
 
         // ==========================================
         // CARGA DE MASCOTAS, SOS Y ALERTAS SMART
@@ -530,7 +643,7 @@
         }
 
         // ==========================================
-        // GENERADOR DE CERTIFICADO PDF LEGAL (NUEVO MÉTODO OFF-SCREEN)
+        // GENERADOR DE CERTIFICADO PDF LEGAL
         // ==========================================
         document.getElementById('btn-descargar-pdf').addEventListener('click', () => {
             const btn = document.getElementById('btn-descargar-pdf');
