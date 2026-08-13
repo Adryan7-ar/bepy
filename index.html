@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bepy | Acceso al Ecosistema</title>
+    <title>Bepy | El Ecosistema de Bienestar Animal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- LIBRERÍA DE MAPAS PARA EL MOCKUP DEL CELULAR -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         :root { 
             --primary: #0ea5e9; /* Azul Bepy */
+            --primary-dark: #0284c7;
             --dark: #0f172a; 
             --panel: #1e293b; 
             --text: #f8fafc; 
@@ -19,435 +25,488 @@
         
         body { 
             font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, var(--bg-light) 0%, #cbd5e1 100%);
+            background: var(--bg-light);
             color: var(--dark); 
             margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+            /* Se removió el flexbox centrado para permitir que la página sea scrolleable */
         }
 
-        .auth-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        /* =========================================
+           BARRA DE NAVEGACIÓN
+           ========================================= */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: fixed; width: 100%; top: 0; z-index: 100; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { text-decoration: none; color: #475569; font-weight: 600; transition: 0.2s; }
+        .nav-links a:hover { color: var(--primary); }
+        .btn-nav-login { background: var(--dark); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-nav-login:hover { background: var(--primary); transform: translateY(-2px); }
 
-        .auth-card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Diseño del logo */
-        .logo-box {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo-box i {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        .logo-box h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: var(--dark);
-            letter-spacing: -1px;
-        }
-        .logo-box p {
-            margin: 5px 0 0 0;
-            color: #64748b;
-            font-size: 0.95rem;
-        }
-
-        /* Pestañas (Login / Registro) */
-        .tabs {
-            display: flex;
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 5px;
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            color: #64748b;
-            transition: 0.3s;
-        }
-        .tab-btn.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        /* Formularios */
-        .form-section {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-        .form-section.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #475569;
-            text-transform: uppercase;
-        }
-        .input-form {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.2s;
-            color: var(--dark);
-        }
-        .input-form:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
-        }
-
-        /* Campos condicionales */
-        .conditional-fields {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px dashed #cbd5e1;
-            display: none;
-        }
-
-        /* Botón de acción */
-        .btn-submit {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-        .btn-submit:hover {
-            background: #0284c7;
-            transform: translateY(-2px);
-        }
-        .btn-submit:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .msj-error {
-            color: var(--danger);
-            text-align: center;
-            font-size: 0.9rem;
-            margin-top: 15px;
-            font-weight: bold;
-            min-height: 20px;
-        }
+        /* =========================================
+           HERO SECTION (LA VIDRIERA PRINCIPAL)
+           ========================================= */
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; background: radial-gradient(circle at top right, #e0f2fe 0%, #f8fafc 100%); padding-top: 80px; box-sizing: border-box; }
         
-        .loader-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            display: none;
-        }
-        .loader-overlay i {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
+        .hero-text { flex: 1; max-width: 600px; }
+        .badge-hero { display: inline-block; background: #dbeafe; color: var(--primary-dark); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 20px; border: 1px solid #bae6fd; }
+        .hero-text h1 { font-size: 3.5rem; line-height: 1.1; color: var(--dark); margin: 0 0 20px 0; letter-spacing: -1px; }
+        .hero-text h1 span { color: var(--primary); }
+        .hero-text p { font-size: 1.2rem; color: #475569; margin-bottom: 30px; line-height: 1.6; }
+        
+        .hero-botones { display: flex; gap: 15px; }
+        .btn-cta-main { background: var(--primary); color: white; border: none; padding: 18px 35px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
+        .btn-cta-main:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4); }
+        .btn-cta-sec { background: transparent; color: var(--dark); border: 2px solid #cbd5e1; padding: 18px 35px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-cta-sec:hover { border-color: var(--dark); }
+
+        /* EL CELULAR CON EL MAPA ADENTRO */
+        .hero-visual { flex: 1; display: flex; justify-content: center; position: relative; perspective: 1000px; }
+        .mockup-phone { width: 300px; height: 600px; border: 12px solid #0f172a; border-radius: 40px; background: white; position: relative; box-shadow: 25px 25px 50px rgba(0,0,0,0.2), inset 0 0 10px rgba(0,0,0,0.1); overflow: hidden; transform: rotateY(-15deg) rotateX(5deg); transition: transform 0.5s ease; }
+        .mockup-phone:hover { transform: rotateY(0deg) rotateX(0deg) scale(1.05); }
+        .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 25px; background: #0f172a; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 10; }
+        
+        #mapa-hero { width: 100%; height: 100%; background: #e2e8f0; z-index: 1; }
+        
+        /* Efecto de UI flotante sobre el mapa del celular */
+        .phone-ui-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); padding: 15px; border-radius: 15px; z-index: 5; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .phone-ui-overlay h4 { margin: 0 0 5px 0; font-size: 0.9rem; color: var(--danger); display: flex; align-items: center; gap: 5px; }
+        .phone-ui-overlay p { margin: 0; font-size: 0.75rem; color: #475569; }
+
+        /* =========================================
+           SECCIÓN DE SERVICIOS
+           ========================================= */
+        .servicios { padding: 80px 5%; background: white; text-align: center; }
+        .servicios-header h2 { font-size: 2.5rem; color: var(--dark); margin-bottom: 10px; }
+        .servicios-header p { color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 0 auto 50px auto; }
+        
+        .grid-servicios { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card-servicio { background: var(--bg-light); padding: 40px 30px; border-radius: 20px; border: 1px solid #e2e8f0; transition: 0.3s; text-align: left; position: relative; overflow: hidden; }
+        .card-servicio:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-color: var(--primary); }
+        .icon-box { width: 60px; height: 60px; background: #e0f2fe; color: var(--primary); border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; margin-bottom: 20px; }
+        .card-servicio h3 { font-size: 1.5rem; color: var(--dark); margin: 0 0 15px 0; }
+        .card-servicio p { color: #475569; line-height: 1.6; margin: 0 0 20px 0; }
+        .lista-beneficios { list-style: none; padding: 0; margin: 0; }
+        .lista-beneficios li { margin-bottom: 10px; font-size: 0.95rem; color: #334155; display: flex; align-items: center; gap: 10px; }
+        .lista-beneficios li i { color: var(--success); }
+
+        /* =========================================
+           ESTILOS ORIGINALES DEL FORMULARIO
+           ========================================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        /* Contenedor Original adaptado para el modal */
+        .auth-container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.active .auth-container { transform: translateY(0); }
+        
+        .auth-card { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; overflow: hidden; max-height: 85vh; overflow-y: auto; }
+        
+        .btn-cerrar-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; transition: 0.2s; z-index: 101; }
+        .btn-cerrar-modal:hover { color: var(--danger); transform: rotate(90deg); }
+
+        .logo-box { text-align: center; margin-bottom: 30px; }
+        .logo-box i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        .logo-box h1 { margin: 0; font-size: 2rem; color: var(--dark); letter-spacing: -1px; }
+        .logo-box p { margin: 5px 0 0 0; color: #64748b; font-size: 0.95rem; }
+
+        .tabs { display: flex; background: #f8fafc; border-radius: 12px; padding: 5px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; color: #64748b; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .form-section { display: none; animation: fadeIn 0.4s ease; }
+        .form-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: bold; color: #475569; text-transform: uppercase; }
+        .input-form { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.2s; color: var(--dark); }
+        .input-form:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+
+        .conditional-fields { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px dashed #cbd5e1; display: none; }
+
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-submit:hover { background: #0284c7; transform: translateY(-2px); }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+
+        .msj-error { color: var(--danger); text-align: center; font-size: 0.9rem; margin-top: 15px; font-weight: bold; min-height: 20px; }
+        
+        .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; display: none; }
+        .loader-overlay i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="auth-container">
-    <div class="auth-card">
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-paw"></i> Bepy</div>
+        <div class="nav-links">
+            <a href="#servicios">Servicios</a>
+            <a href="#ecosistema">Ecosistema</a>
+        </div>
+        <button class="btn-nav-login" onclick="abrirAuthModal('login')">Iniciar Sesión</button>
+    </nav>
+
+    <!-- LA VIDRIERA DE VENTA -->
+    <header class="hero">
+        <div class="hero-text">
+            <div class="badge-hero"><i class="fa-solid fa-location-dot"></i> Ya disponible en la Costa Atlántica</div>
+            <h1>El cuidado de tu mascota, <span>conectado.</span></h1>
+            <p>Bepy es la primera plataforma que une a dueños, veterinarios, petshops y refugios en un solo lugar. Libretas sanitarias oficiales, descuentos en tu zona y un radar S.O.S de emergencias en tiempo real.</p>
+            <div class="hero-botones">
+                <button class="btn-cta-main" onclick="abrirAuthModal('register')">Unite a Bepy Gratis <i class="fa-solid fa-arrow-right"></i></button>
+                <a href="#servicios"><button class="btn-cta-sec">Conocer más</button></a>
+            </div>
+        </div>
         
-        <div class="loader-overlay" id="global-loader">
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
-            <strong style="color: var(--dark);">Conectando ecosistema...</strong>
-        </div>
-
-        <div class="logo-box">
-            <i class="fa-solid fa-paw"></i>
-            <h1>Bepy</h1>
-            <p>El Ecosistema Global de Bienestar Animal</p>
-        </div>
-
-        <div class="tabs">
-            <div class="tab-btn active" onclick="switchTab('login')">Ingresar</div>
-            <div class="tab-btn" onclick="switchTab('register')">Crear Cuenta</div>
-        </div>
-
-        <!-- FORMULARIO DE LOGIN -->
-        <div id="form-login" class="form-section active">
-            <div class="input-group">
-                <label>Correo Electrónico</label>
-                <input type="email" id="login-email" class="input-form" placeholder="tu@email.com">
-            </div>
-            <div class="input-group">
-                <label>Contraseña</label>
-                <input type="password" id="login-pass" class="input-form" placeholder="••••••••">
-            </div>
-            <button id="btn-login" class="btn-submit">Ingresar al Panel</button>
-            <div id="msj-login" class="msj-error"></div>
-        </div>
-
-        <!-- FORMULARIO DE REGISTRO MAESTRO -->
-        <div id="form-register" class="form-section">
-            <div class="input-group">
-                <label>Correo Electrónico</label>
-                <input type="email" id="reg-email" class="input-form" placeholder="tu@email.com">
-            </div>
-            <div class="input-group">
-                <label>Contraseña (Mínimo 6 caracteres)</label>
-                <input type="password" id="reg-pass" class="input-form" placeholder="••••••••">
-            </div>
-
-            <div class="input-group">
-                <label>Localidad / Ciudad (Obligatorio)</label>
-                <input type="text" id="reg-localidad" class="input-form" placeholder="Ej: La Plata, City Bell...">
-            </div>
-
-            <div class="input-group">
-                <label>Tipo de Cuenta</label>
-                <select id="reg-rol" class="input-form" onchange="toggleCampos()">
-                    <option value="usuario">Dueño de Mascota</option>
-                    <option value="profesional">Profesional Veterinario</option>
-                    <option value="prestador">Comercio / Prestador de Servicios</option>
-                </select>
-            </div>
-
-            <!-- Campos dinámicos para Veterinarios -->
-            <div id="campos-profesional" class="conditional-fields">
-                <div class="input-group">
-                    <label>Nombre de la Veterinaria o Consultorio</label>
-                    <input type="text" id="reg-prof-nombre" class="input-form" placeholder="Ej: Veterinaria San Roque">
-                </div>
-                <div class="input-group">
-                    <label>Matrícula Nacional/Provincial</label>
-                    <input type="text" id="reg-prof-matricula" class="input-form" placeholder="Ej: MP-12345">
+        <!-- EL CELULAR Y EL MAPA -->
+        <div class="hero-visual">
+            <div class="mockup-phone">
+                <div class="phone-notch"></div>
+                <div id="mapa-hero"></div>
+                
+                <div class="phone-ui-overlay">
+                    <h4><i class="fa-solid fa-satellite-dish"></i> Radar Bepy Activo</h4>
+                    <p>Monitoreando Costa Atlántica y alrededores.</p>
                 </div>
             </div>
+        </div>
+    </header>
 
-            <!-- Campos dinámicos para Comercios/Refugios -->
-            <div id="campos-prestador" class="conditional-fields">
-                <div class="input-group">
-                    <label>Nombre del Comercio o Refugio</label>
-                    <input type="text" id="reg-prest-nombre" class="input-form" placeholder="Ej: PetShop Firulais">
-                </div>
-                <div class="input-group">
-                    <label>Categoría</label>
-                    <select id="reg-prest-tipo" class="input-form">
-                        <option value="petshop">Pet Shop</option>
-                        <option value="paseador">Paseador / Adiestrador</option>
-                        <option value="guarderia">Guardería / Hotel Canino</option>
-                        <option value="refugio">Refugio de Adopción</option>
-                    </select>
-                </div>
+    <!-- SECCIÓN DE SERVICIOS -->
+    <section id="servicios" class="servicios">
+        <div class="servicios-header">
+            <h2>Un Ecosistema Diseñado para Todos</h2>
+            <p>Elegí tu perfil al registrarte y accedé a herramientas diseñadas específicamente para tu rol en la comunidad.</p>
+        </div>
+        
+        <div class="grid-servicios">
+            <!-- Card Dueños -->
+            <div class="card-servicio">
+                <div class="icon-box"><i class="fa-solid fa-user"></i></div>
+                <h3>Dueños de Mascotas</h3>
+                <p>Llevá la libreta sanitaria oficial siempre en tu bolsillo y protegé a tu mejor amigo.</p>
+                <ul class="lista-beneficios">
+                    <li><i class="fa-solid fa-check"></i> Credencial Digital QR</li>
+                    <li><i class="fa-solid fa-check"></i> Alertas de vacunas por vencer</li>
+                    <li><i class="fa-solid fa-check"></i> Botón S.O.S (Búsqueda global)</li>
+                    <li><i class="fa-solid fa-check"></i> Beneficios y descuentos zonales</li>
+                </ul>
             </div>
 
-            <button id="btn-register" class="btn-submit">Registrarme en Bepy</button>
-            <div id="msj-register" class="msj-error"></div>
-        </div>
+            <!-- Card Veterinarios -->
+            <div class="card-servicio" style="border-top: 4px solid var(--success);">
+                <div class="icon-box" style="background: #dcfce7; color: var(--success);"><i class="fa-solid fa-user-doctor"></i></div>
+                <h3>Profesionales Veterinarios</h3>
+                <p>Digitalizá tu clínica y certificá las libretas de tus pacientes con firma legal electrónica.</p>
+                <ul class="lista-beneficios">
+                    <li><i class="fa-solid fa-check"></i> Escáner QR de pacientes</li>
+                    <li><i class="fa-solid fa-check"></i> Firma y Sello Digital</li>
+                    <li><i class="fa-solid fa-check"></i> Historial clínico centralizado</li>
+                    <li><i class="fa-solid fa-check"></i> Recepción de Cotizaciones</li>
+                </ul>
+            </div>
 
+            <!-- Card Comercios -->
+            <div class="card-servicio" style="border-top: 4px solid var(--gold);">
+                <div class="icon-box" style="background: #fef3c7; color: var(--gold);"><i class="fa-solid fa-store"></i></div>
+                <h3>Comercios y Refugios</h3>
+                <p>Aumentá tus ventas ofreciendo beneficios y encontrá hogar para los animales rescatados.</p>
+                <ul class="lista-beneficios">
+                    <li><i class="fa-solid fa-check"></i> Panel de Promociones Zonal</li>
+                    <li><i class="fa-solid fa-check"></i> Red de Adopción Integrada</li>
+                    <li><i class="fa-solid fa-check"></i> Publicidad dirigida a dueños</li>
+                    <li><i class="fa-solid fa-check"></i> Integración B2B</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================================
+         TU FORMULARIO ORIGINAL INTACTO DENTRO DEL MODAL
+         ========================================= -->
+    <div id="auth-modal-overlay" class="modal-overlay">
+        <div class="auth-container">
+            <div class="auth-card">
+                
+                <button class="btn-cerrar-modal" onclick="cerrarAuthModal()"><i class="fa-solid fa-xmark"></i></button>
+
+                <div class="loader-overlay" id="global-loader">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <strong style="color: var(--dark);">Conectando ecosistema...</strong>
+                </div>
+
+                <div class="logo-box">
+                    <i class="fa-solid fa-paw"></i>
+                    <h1>Bepy</h1>
+                    <p>El Ecosistema Global de Bienestar Animal</p>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab-btn active" onclick="switchTab('login')">Ingresar</div>
+                    <div class="tab-btn" onclick="switchTab('register')">Crear Cuenta</div>
+                </div>
+
+                <!-- FORMULARIO DE LOGIN -->
+                <div id="form-login" class="form-section active">
+                    <div class="input-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="login-email" class="input-form" placeholder="tu@email.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="login-pass" class="input-form" placeholder="••••••••">
+                    </div>
+                    <button id="btn-login" class="btn-submit">Ingresar al Panel</button>
+                    <div id="msj-login" class="msj-error"></div>
+                </div>
+
+                <!-- FORMULARIO DE REGISTRO MAESTRO -->
+                <div id="form-register" class="form-section">
+                    <div class="input-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="reg-email" class="input-form" placeholder="tu@email.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña (Mínimo 6 caracteres)</label>
+                        <input type="password" id="reg-pass" class="input-form" placeholder="••••••••">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Localidad / Ciudad (Obligatorio)</label>
+                        <input type="text" id="reg-localidad" class="input-form" placeholder="Ej: La Plata, City Bell...">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Tipo de Cuenta</label>
+                        <select id="reg-rol" class="input-form" onchange="toggleCampos()">
+                            <option value="usuario">Dueño de Mascota</option>
+                            <option value="profesional">Profesional Veterinario</option>
+                            <option value="prestador">Comercio / Prestador de Servicios</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos dinámicos para Veterinarios -->
+                    <div id="campos-profesional" class="conditional-fields">
+                        <div class="input-group">
+                            <label>Nombre de la Veterinaria o Consultorio</label>
+                            <input type="text" id="reg-prof-nombre" class="input-form" placeholder="Ej: Veterinaria San Roque">
+                        </div>
+                        <div class="input-group">
+                            <label>Matrícula Nacional/Provincial</label>
+                            <input type="text" id="reg-prof-matricula" class="input-form" placeholder="Ej: MP-12345">
+                        </div>
+                    </div>
+
+                    <!-- Campos dinámicos para Comercios/Refugios -->
+                    <div id="campos-prestador" class="conditional-fields">
+                        <div class="input-group">
+                            <label>Nombre del Comercio o Refugio</label>
+                            <input type="text" id="reg-prest-nombre" class="input-form" placeholder="Ej: PetShop Firulais">
+                        </div>
+                        <div class="input-group">
+                            <label>Categoría</label>
+                            <select id="reg-prest-tipo" class="input-form">
+                                <option value="petshop">Pet Shop</option>
+                                <option value="paseador">Paseador / Adiestrador</option>
+                                <option value="guarderia">Guardería / Hotel Canino</option>
+                                <option value="refugio">Refugio de Adopción</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="btn-register" class="btn-submit">Registrarme en Bepy</button>
+                    <div id="msj-register" class="msj-error"></div>
+                </div>
+
+            </div>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app, "bepy-data");
-
-    // ==========================================
-    // UI: MANEJO DE PESTAÑAS Y CAMPOS DINÁMICOS
-    // ==========================================
-    window.switchTab = function(tab) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.form-section').forEach(form => form.classList.remove('active'));
+    <script type="module">
+        // ==========================================
+        // 1. INICIALIZAR EL MAPA DEL CELULAR (Visual)
+        // ==========================================
+        const mapaHero = L.map('mapa-hero', { zoomControl: false, attributionControl: false }).setView([-36.5414, -56.7214], 10); // Costa Atlántica
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaHero);
         
-        if (tab === 'login') {
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById('form-login').classList.add('active');
-        } else {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.getElementById('form-register').classList.add('active');
+        // Agregar un par de pines de muestra al celular
+        const iconNormal = L.divIcon({ html: '<i class="fa-solid fa-location-dot" style="color:#0ea5e9; font-size:1.5rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));"></i>', className: 'dummy', iconSize: [20, 20] });
+        const iconSOS = L.divIcon({ html: '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444; font-size:1.8rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); animation: latido 1.5s infinite;"></i>', className: 'dummy', iconSize: [25, 25] });
+        
+        L.marker([-36.5414, -56.7214], {icon: iconNormal}).addTo(mapaHero); // Santa Teresita
+        L.marker([-37.3333, -57.0333], {icon: iconSOS}).addTo(mapaHero); // Mar Azul (Simulando SOS)
+        L.marker([-36.6833, -56.6833], {icon: iconNormal}).addTo(mapaHero); // San Bernardo
+
+        // ==========================================
+        // 2. LÓGICA DE APERTURA/CIERRE DEL MODAL
+        // ==========================================
+        window.abrirAuthModal = function(tab) {
+            document.getElementById('auth-modal-overlay').classList.add('active');
+            window.switchTab(tab);
+        };
+        window.cerrarAuthModal = function() {
+            document.getElementById('auth-modal-overlay').classList.remove('active');
+        };
+
+        // ==========================================
+        // 3. TU CÓDIGO ORIGINAL INTACTO DE LÓGICA
+        // ==========================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "bepy-data");
+
+        // UI: MANEJO DE PESTAÑAS Y CAMPOS DINÁMICOS
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(form => form.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('form-login').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('form-register').classList.add('active');
+            }
+        };
+
+        window.toggleCampos = function() {
+            const rol = document.getElementById('reg-rol').value;
+            document.getElementById('campos-profesional').style.display = (rol === 'profesional') ? 'block' : 'none';
+            document.getElementById('campos-prestador').style.display = (rol === 'prestador') ? 'block' : 'none';
+        };
+
+        function mostrarLoader(mostrar) {
+            document.getElementById('global-loader').style.display = mostrar ? 'flex' : 'none';
         }
-    };
 
-    window.toggleCampos = function() {
-        const rol = document.getElementById('reg-rol').value;
-        document.getElementById('campos-profesional').style.display = (rol === 'profesional') ? 'block' : 'none';
-        document.getElementById('campos-prestador').style.display = (rol === 'prestador') ? 'block' : 'none';
-    };
+        // LÓGICA DE INICIO DE SESIÓN (LOGIN INTELIGENTE)
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            const msj = document.getElementById('msj-login');
 
-    function mostrarLoader(mostrar) {
-        document.getElementById('global-loader').style.display = mostrar ? 'flex' : 'none';
-    }
+            if (!email || !pass) { msj.innerText = "Completá todos los campos."; return; }
+            
+            msj.innerText = "";
+            mostrarLoader(true);
 
-    // ==========================================
-    // LÓGICA DE INICIO DE SESIÓN (LOGIN INTELIGENTE)
-    // ==========================================
-    document.getElementById('btn-login').addEventListener('click', async () => {
-        const email = document.getElementById('login-email').value.trim();
-        const pass = document.getElementById('login-pass').value.trim();
-        const msj = document.getElementById('msj-login');
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const uid = userCredential.user.uid;
 
-        if (!email || !pass) { msj.innerText = "Completá todos los campos."; return; }
-        
-        msj.innerText = "";
-        mostrarLoader(true);
+                // Consultar en la base de datos qué rol tiene este usuario
+                const docRef = doc(db, "usuarios", uid);
+                const docSnap = await getDoc(docRef);
 
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-            const uid = userCredential.user.uid;
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const rolUsuario = data.rol;
 
-            // Consultar en la base de datos qué rol tiene este usuario
-            const docRef = doc(db, "usuarios", uid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const rolUsuario = data.rol;
-
-                // REDIRECCIÓN INTELIGENTE
-                if (rolUsuario === 'admin') {
-                    window.location.href = "admin-panel.html";
-                } else if (rolUsuario === 'profesional') {
-                    window.location.href = "panel-profesional.html";
-                } else if (rolUsuario === 'prestador') {
-                    window.location.href = "panel-prestador.html";
+                    // REDIRECCIÓN INTELIGENTE
+                    if (rolUsuario === 'admin') {
+                        window.location.href = "admin-panel.html";
+                    } else if (rolUsuario === 'profesional') {
+                        window.location.href = "panel-profesional.html";
+                    } else if (rolUsuario === 'prestador') {
+                        window.location.href = "panel-prestador.html";
+                    } else {
+                        window.location.href = "panel-usuario.html"; // Por defecto, rol usuario
+                    }
                 } else {
-                    window.location.href = "panel-usuario.html"; // Por defecto, rol usuario
+                    // Si por algún error no está en la BD, lo mandamos al de usuario
+                    window.location.href = "panel-usuario.html"; 
                 }
-            } else {
-                // Si por algún error no está en la BD, lo mandamos al de usuario
-                window.location.href = "panel-usuario.html"; 
+
+            } catch (error) {
+                mostrarLoader(false);
+                console.error(error);
+                if (error.code === 'auth/invalid-credential') {
+                    msj.innerText = "Credenciales incorrectas.";
+                } else {
+                    msj.innerText = "Error al iniciar sesión.";
+                }
+            }
+        });
+
+        // LÓGICA DE REGISTRO UNIFICADO Y BLINDADO
+        document.getElementById('btn-register').addEventListener('click', async () => {
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+            const localidad = document.getElementById('reg-localidad').value.trim();
+            const rol = document.getElementById('reg-rol').value;
+            const msj = document.getElementById('msj-register');
+
+            // Validaciones básicas
+            if (!email || !pass || !localidad) { msj.innerText = "Email, Contraseña y Localidad son obligatorios."; return; }
+            if (pass.length < 6) { msj.innerText = "La contraseña debe tener al menos 6 caracteres."; return; }
+            
+            // Validaciones condicionales
+            if (rol === 'profesional' && !document.getElementById('reg-prof-matricula').value.trim()) {
+                msj.innerText = "La matrícula es obligatoria para profesionales."; return;
+            }
+            if (rol === 'prestador' && !document.getElementById('reg-prest-nombre').value.trim()) {
+                msj.innerText = "El nombre del comercio es obligatorio."; return;
             }
 
-        } catch (error) {
-            mostrarLoader(false);
-            console.error(error);
-            if (error.code === 'auth/invalid-credential') {
-                msj.innerText = "Credenciales incorrectas.";
-            } else {
-                msj.innerText = "Error al iniciar sesión.";
-            }
-        }
-    });
+            msj.innerText = "";
+            mostrarLoader(true);
 
-    // ==========================================
-    // LÓGICA DE REGISTRO UNIFICADO Y BLINDADO
-    // ==========================================
-    document.getElementById('btn-register').addEventListener('click', async () => {
-        const email = document.getElementById('reg-email').value.trim();
-        const pass = document.getElementById('reg-pass').value.trim();
-        const localidad = document.getElementById('reg-localidad').value.trim();
-        const rol = document.getElementById('reg-rol').value;
-        const msj = document.getElementById('msj-register');
+            try {
+                // 1. Crear el usuario en Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                const uid = userCredential.user.uid;
 
-        // Validaciones básicas
-        if (!email || !pass || !localidad) { msj.innerText = "Email, Contraseña y Localidad son obligatorios."; return; }
-        if (pass.length < 6) { msj.innerText = "La contraseña debe tener al menos 6 caracteres."; return; }
-        
-        // Validaciones condicionales
-        if (rol === 'profesional' && !document.getElementById('reg-prof-matricula').value.trim()) {
-            msj.innerText = "La matrícula es obligatoria para profesionales."; return;
-        }
-        if (rol === 'prestador' && !document.getElementById('reg-prest-nombre').value.trim()) {
-            msj.innerText = "El nombre del comercio es obligatorio."; return;
-        }
-
-        msj.innerText = "";
-        mostrarLoader(true);
-
-        try {
-            // 1. Crear el usuario en Firebase Auth
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            const uid = userCredential.user.uid;
-
-            // 2. Guardar en la colección MAESTRA "usuarios" (El blindaje)
-            await setDoc(doc(db, "usuarios", uid), {
-                email: email,
-                rol: rol,
-                localidad: localidad,
-                plan: "gratis", // Todos arrancan gratis
-                fecha_registro: new Date().toISOString()
-            });
-
-            // 3. Si es Profesional, guardamos sus datos específicos en su colección
-            if (rol === 'profesional') {
-                await setDoc(doc(db, "profesionales", uid), {
+                // 2. Guardar en la colección MAESTRA "usuarios" (El blindaje)
+                await setDoc(doc(db, "usuarios", uid), {
                     email: email,
-                    nombre_veterinaria: document.getElementById('reg-prof-nombre').value.trim(),
-                    matricula: document.getElementById('reg-prof-matricula').value.trim(),
-                    localidad: localidad
+                    rol: rol,
+                    localidad: localidad,
+                    plan: "gratis", // Todos arrancan gratis
+                    fecha_registro: new Date().toISOString()
                 });
-            }
 
-            // 4. Si es Prestador, guardamos sus datos específicos en su colección
-            if (rol === 'prestador') {
-                await setDoc(doc(db, "prestadores", uid), {
-                    email: email,
-                    nombre_comercio: document.getElementById('reg-prest-nombre').value.trim(),
-                    tipo: document.getElementById('reg-prest-tipo').value,
-                    localidad: localidad
-                });
-            }
+                // 3. Si es Profesional, guardamos sus datos específicos en su colección
+                if (rol === 'profesional') {
+                    await setDoc(doc(db, "profesionales", uid), {
+                        email: email,
+                        nombre_veterinaria: document.getElementById('reg-prof-nombre').value.trim(),
+                        matricula: document.getElementById('reg-prof-matricula').value.trim(),
+                        localidad: localidad
+                    });
+                }
 
-            // 5. Redirección inteligente post-registro
-            if (rol === 'profesional') window.location.href = "panel-profesional.html";
-            else if (rol === 'prestador') window.location.href = "panel-prestador.html";
-            else window.location.href = "panel-usuario.html";
+                // 4. Si es Prestador, guardamos sus datos específicos en su colección
+                if (rol === 'prestador') {
+                    await setDoc(doc(db, "prestadores", uid), {
+                        email: email,
+                        nombre_comercio: document.getElementById('reg-prest-nombre').value.trim(),
+                        tipo: document.getElementById('reg-prest-tipo').value,
+                        localidad: localidad
+                    });
+                }
 
-        } catch (error) {
-            mostrarLoader(false);
-            console.error(error);
-            if (error.code === 'auth/email-already-in-use') {
-                msj.innerText = "Ese correo ya está registrado.";
-            } else {
-                msj.innerText = "Error al registrar la cuenta.";
+                // 5. Redirección inteligente post-registro
+                if (rol === 'profesional') window.location.href = "panel-profesional.html";
+                else if (rol === 'prestador') window.location.href = "panel-prestador.html";
+                else window.location.href = "panel-usuario.html";
+
+            } catch (error) {
+                mostrarLoader(false);
+                console.error(error);
+                if (error.code === 'auth/email-already-in-use') {
+                    msj.innerText = "Ese correo ya está registrado.";
+                } else {
+                    msj.innerText = "Error al registrar la cuenta.";
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
