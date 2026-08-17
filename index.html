@@ -12,7 +12,7 @@
 
     <style>
         :root { 
-            --primary: #0ea5e9; /* Azul Bepy */
+            --primary: #0ea5e9; 
             --primary-dark: #0284c7;
             --dark: #0f172a; 
             --panel: #1e293b; 
@@ -30,7 +30,7 @@
             margin: 0; 
             padding: 0;
             overflow-x: hidden;
-            /* Se removió el flexbox centrado para permitir que la página sea scrolleable */
+            scroll-behavior: smooth;
         }
 
         /* =========================================
@@ -59,7 +59,7 @@
         .btn-cta-main { background: var(--primary); color: white; border: none; padding: 18px 35px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
         .btn-cta-main:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4); }
         .btn-cta-sec { background: transparent; color: var(--dark); border: 2px solid #cbd5e1; padding: 18px 35px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-cta-sec:hover { border-color: var(--dark); }
+        .btn-cta-sec:hover { border-color: var(--dark); background: rgba(15, 23, 42, 0.05); }
 
         /* EL CELULAR CON EL MAPA ADENTRO */
         .hero-visual { flex: 1; display: flex; justify-content: center; position: relative; perspective: 1000px; }
@@ -92,12 +92,33 @@
         .lista-beneficios li i { color: var(--success); }
 
         /* =========================================
-           ESTILOS ORIGINALES DEL FORMULARIO
+           SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) - FASE 1
+           ========================================= */
+        .faq-section { padding: 80px 5%; background: var(--bg-light); text-align: center; }
+        .faq-header h2 { font-size: 2.5rem; color: var(--dark); margin-bottom: 10px; }
+        .faq-header p { color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 0 auto 40px auto; }
+        
+        .faq-container { max-width: 800px; margin: 0 auto; text-align: left; }
+        .faq-item { background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid #cbd5e1; transition: 0.3s; }
+        .faq-item:hover { border-color: var(--primary); }
+        
+        .faq-question { padding: 20px 25px; font-size: 1.1rem; font-weight: bold; color: var(--dark); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .faq-question:hover { color: var(--primary); }
+        .faq-question i { color: var(--primary); transition: transform 0.3s ease; }
+        
+        /* Estado Abierto del Acordeón */
+        .faq-item.active .faq-question i { transform: rotate(180deg); }
+        .faq-item.active { border-color: var(--primary); box-shadow: 0 10px 20px rgba(14, 165, 233, 0.1); }
+        
+        .faq-answer { padding: 0 25px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; color: #475569; line-height: 1.6; font-size: 0.95rem; }
+        .faq-item.active .faq-answer { padding: 0 25px 20px 25px; max-height: 300px; } /* Muestra la respuesta */
+
+        /* =========================================
+           ESTILOS ORIGINALES DEL FORMULARIO (MODAL)
            ========================================= */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
         
-        /* Contenedor Original adaptado para el modal */
         .auth-container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; transform: translateY(20px); transition: transform 0.3s ease; }
         .modal-overlay.active .auth-container { transform: translateY(0); }
         
@@ -134,6 +155,9 @@
         
         .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; display: none; }
         .loader-overlay i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        
+        /* Footer Sencillo */
+        footer { background: var(--dark); color: #94a3b8; text-align: center; padding: 30px 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -143,12 +167,12 @@
         <div class="logo"><i class="fa-solid fa-paw"></i> Bepy</div>
         <div class="nav-links">
             <a href="#servicios">Servicios</a>
-            <a href="#ecosistema">Ecosistema</a>
+            <a href="#faq">Preguntas Frecuentes</a>
         </div>
         <button class="btn-nav-login" onclick="abrirAuthModal('login')">Iniciar Sesión</button>
     </nav>
 
-    <!-- LA VIDRIERA DE VENTA -->
+    <!-- LA VIDRIERA DE VENTA (HERO) -->
     <header class="hero">
         <div class="hero-text">
             <div class="badge-hero"><i class="fa-solid fa-location-dot"></i> Ya disponible en la Costa Atlántica</div>
@@ -156,7 +180,7 @@
             <p>Bepy es la primera plataforma que une a dueños, veterinarios, petshops y refugios en un solo lugar. Libretas sanitarias oficiales, descuentos en tu zona y un radar S.O.S de emergencias en tiempo real.</p>
             <div class="hero-botones">
                 <button class="btn-cta-main" onclick="abrirAuthModal('register')">Unite a Bepy Gratis <i class="fa-solid fa-arrow-right"></i></button>
-                <a href="#servicios"><button class="btn-cta-sec">Conocer más</button></a>
+                <a href="#faq"><button class="btn-cta-sec">Saber más</button></a>
             </div>
         </div>
         
@@ -182,7 +206,6 @@
         </div>
         
         <div class="grid-servicios">
-            <!-- Card Dueños -->
             <div class="card-servicio">
                 <div class="icon-box"><i class="fa-solid fa-user"></i></div>
                 <h3>Dueños de Mascotas</h3>
@@ -195,7 +218,6 @@
                 </ul>
             </div>
 
-            <!-- Card Veterinarios -->
             <div class="card-servicio" style="border-top: 4px solid var(--success);">
                 <div class="icon-box" style="background: #dcfce7; color: var(--success);"><i class="fa-solid fa-user-doctor"></i></div>
                 <h3>Profesionales Veterinarios</h3>
@@ -208,7 +230,6 @@
                 </ul>
             </div>
 
-            <!-- Card Comercios -->
             <div class="card-servicio" style="border-top: 4px solid var(--gold);">
                 <div class="icon-box" style="background: #fef3c7; color: var(--gold);"><i class="fa-solid fa-store"></i></div>
                 <h3>Comercios y Refugios</h3>
@@ -217,11 +238,71 @@
                     <li><i class="fa-solid fa-check"></i> Panel de Promociones Zonal</li>
                     <li><i class="fa-solid fa-check"></i> Red de Adopción Integrada</li>
                     <li><i class="fa-solid fa-check"></i> Publicidad dirigida a dueños</li>
-                    <li><i class="fa-solid fa-check"></i> Integración B2B</li>
+                    <li><i class="fa-solid fa-check"></i> Gestión de Turnos</li>
                 </ul>
             </div>
         </div>
     </section>
+
+    <!-- SECCIÓN DE PREGUNTAS FRECUENTES (FASE 1) -->
+    <section id="faq" class="faq-section">
+        <div class="faq-header">
+            <h2>Preguntas Frecuentes</h2>
+            <p>Todo lo que necesitás saber sobre el ecosistema Bepy y cómo protegemos a tu mascota.</p>
+        </div>
+        
+        <div class="faq-container">
+            <!-- FAQ 1 -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    ¿Qué es la Credencial Bepy y tiene algún costo? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Es una billetera sanitaria digital totalmente gratuita para los dueños. Te permite llevar el historial médico de tu mascota siempre en el celular, recibir alertas inteligentes cuando una vacuna está por vencer y acceder a una red de beneficios en comercios de tu zona.
+                </div>
+            </div>
+            <!-- FAQ 2 -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    ¿Cómo funciona el botón S.O.S de mascotas perdidas? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Ante una emergencia, podés activar la "Alerta S.O.S" desde tu panel. El sistema geolocaliza a tu mascota en el mapa central y envía una notificación roja inmediata al radar de todos los usuarios, veterinarias y comercios adheridos de tu ciudad para ayudar en la búsqueda.
+                </div>
+            </div>
+            <!-- FAQ 3 -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    ¿Puedo usar la plataforma si me voy de vacaciones? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    ¡Por supuesto! El ecosistema Bepy es global. Si viajás (por ejemplo, a la Costa Atlántica), la plataforma actualiza tu ubicación y te conecta automáticamente con las veterinarias de guardia, refugios y pet shops que se encuentren disponibles en tu ciudad de destino.
+                </div>
+            </div>
+            <!-- FAQ 4 -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    ¿Cómo valido las vacunas de mi mascota en la app? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Bepy reemplaza la libreta de papel por un sistema legal. Cuando vas al veterinario, el profesional (previamente validado con su matrícula en nuestra plataforma) escanea el código QR de tu credencial y registra la vacuna, aplicando su firma y sello digital inalterable.
+                </div>
+            </div>
+            <!-- FAQ 5 -->
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    ¿Puedo reservar turnos o pedir traslados desde Bepy? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sí. Nuestro modelo de Marketplace te permite pedir cotizaciones de cirugías a diferentes veterinarias, reservar turnos con paseadores o peluquerías (verificando sus cupos en tiempo real) y solicitar choferes pet-friendly autorizados por BepyRide para trasladar a tu mascota.
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2024 Bepy Global. Todos los derechos reservados.</p>
+    </footer>
 
     <!-- =========================================
          TU FORMULARIO ORIGINAL INTACTO DENTRO DEL MODAL
@@ -287,26 +368,14 @@
                         </select>
                     </div>
 
-                    <!-- Campos dinámicos para Veterinarios -->
                     <div id="campos-profesional" class="conditional-fields">
-                        <div class="input-group">
-                            <label>Nombre de la Veterinaria o Consultorio</label>
-                            <input type="text" id="reg-prof-nombre" class="input-form" placeholder="Ej: Veterinaria San Roque">
-                        </div>
-                        <div class="input-group">
-                            <label>Matrícula Nacional/Provincial</label>
-                            <input type="text" id="reg-prof-matricula" class="input-form" placeholder="Ej: MP-12345">
-                        </div>
+                        <div class="input-group"><label>Nombre de la Veterinaria</label><input type="text" id="reg-prof-nombre" class="input-form"></div>
+                        <div class="input-group"><label>Matrícula Nacional/Provincial</label><input type="text" id="reg-prof-matricula" class="input-form"></div>
                     </div>
 
-                    <!-- Campos dinámicos para Comercios/Refugios -->
                     <div id="campos-prestador" class="conditional-fields">
-                        <div class="input-group">
-                            <label>Nombre del Comercio o Refugio</label>
-                            <input type="text" id="reg-prest-nombre" class="input-form" placeholder="Ej: PetShop Firulais">
-                        </div>
-                        <div class="input-group">
-                            <label>Categoría</label>
+                        <div class="input-group"><label>Nombre del Comercio/Refugio</label><input type="text" id="reg-prest-nombre" class="input-form"></div>
+                        <div class="input-group"><label>Categoría</label>
                             <select id="reg-prest-tipo" class="input-form">
                                 <option value="petshop">Pet Shop</option>
                                 <option value="paseador">Paseador / Adiestrador</option>
@@ -326,21 +395,30 @@
 
     <script type="module">
         // ==========================================
-        // 1. INICIALIZAR EL MAPA DEL CELULAR (Visual)
+        // LÓGICA DEL MAPA HERO
         // ==========================================
-        const mapaHero = L.map('mapa-hero', { zoomControl: false, attributionControl: false }).setView([-36.5414, -56.7214], 10); // Costa Atlántica
+        const mapaHero = L.map('mapa-hero', { zoomControl: false, attributionControl: false }).setView([-36.5414, -56.7214], 10); 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaHero);
         
-        // Agregar un par de pines de muestra al celular
         const iconNormal = L.divIcon({ html: '<i class="fa-solid fa-location-dot" style="color:#0ea5e9; font-size:1.5rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));"></i>', className: 'dummy', iconSize: [20, 20] });
         const iconSOS = L.divIcon({ html: '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444; font-size:1.8rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); animation: latido 1.5s infinite;"></i>', className: 'dummy', iconSize: [25, 25] });
         
-        L.marker([-36.5414, -56.7214], {icon: iconNormal}).addTo(mapaHero); // Santa Teresita
-        L.marker([-37.3333, -57.0333], {icon: iconSOS}).addTo(mapaHero); // Mar Azul (Simulando SOS)
-        L.marker([-36.6833, -56.6833], {icon: iconNormal}).addTo(mapaHero); // San Bernardo
+        L.marker([-36.5414, -56.7214], {icon: iconNormal}).addTo(mapaHero); 
+        L.marker([-37.3333, -57.0333], {icon: iconSOS}).addTo(mapaHero); 
+        L.marker([-36.6833, -56.6833], {icon: iconNormal}).addTo(mapaHero);
 
         // ==========================================
-        // 2. LÓGICA DE APERTURA/CIERRE DEL MODAL
+        // LÓGICA FAQ (ACORDEÓN)
+        // ==========================================
+        window.toggleFaq = function(element) {
+            const item = element.parentElement;
+            // Si queremos que al abrir una se cierren las demás, descomentar la siguiente línea:
+            // document.querySelectorAll('.faq-item').forEach(faq => { if (faq !== item) faq.classList.remove('active'); });
+            item.classList.toggle('active');
+        };
+
+        // ==========================================
+        // LÓGICA DE INTERFAZ DEL MODAL (TU CÓDIGO)
         // ==========================================
         window.abrirAuthModal = function(tab) {
             document.getElementById('auth-modal-overlay').classList.add('active');
@@ -350,9 +428,6 @@
             document.getElementById('auth-modal-overlay').classList.remove('active');
         };
 
-        // ==========================================
-        // 3. TU CÓDIGO ORIGINAL INTACTO DE LÓGICA
-        // ==========================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -362,11 +437,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app, "bepy-data");
 
-        // UI: MANEJO DE PESTAÑAS Y CAMPOS DINÁMICOS
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.form-section').forEach(form => form.classList.remove('active'));
-            
             if (tab === 'login') {
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 document.getElementById('form-login').classList.add('active');
@@ -382,60 +455,30 @@
             document.getElementById('campos-prestador').style.display = (rol === 'prestador') ? 'block' : 'none';
         };
 
-        function mostrarLoader(mostrar) {
-            document.getElementById('global-loader').style.display = mostrar ? 'flex' : 'none';
-        }
+        function mostrarLoader(mostrar) { document.getElementById('global-loader').style.display = mostrar ? 'flex' : 'none'; }
 
-        // LÓGICA DE INICIO DE SESIÓN (LOGIN INTELIGENTE)
+        // LOGIN
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
             const msj = document.getElementById('msj-login');
-
             if (!email || !pass) { msj.innerText = "Completá todos los campos."; return; }
-            
-            msj.innerText = "";
-            mostrarLoader(true);
+            msj.innerText = ""; mostrarLoader(true);
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                const uid = userCredential.user.uid;
-
-                // Consultar en la base de datos qué rol tiene este usuario
-                const docRef = doc(db, "usuarios", uid);
-                const docSnap = await getDoc(docRef);
-
+                const docSnap = await getDoc(doc(db, "usuarios", userCredential.user.uid));
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const rolUsuario = data.rol;
-
-                    // REDIRECCIÓN INTELIGENTE
-                    if (rolUsuario === 'admin') {
-                        window.location.href = "admin-panel.html";
-                    } else if (rolUsuario === 'profesional') {
-                        window.location.href = "panel-profesional.html";
-                    } else if (rolUsuario === 'prestador') {
-                        window.location.href = "panel-prestador.html";
-                    } else {
-                        window.location.href = "panel-usuario.html"; // Por defecto, rol usuario
-                    }
-                } else {
-                    // Si por algún error no está en la BD, lo mandamos al de usuario
-                    window.location.href = "panel-usuario.html"; 
-                }
-
-            } catch (error) {
-                mostrarLoader(false);
-                console.error(error);
-                if (error.code === 'auth/invalid-credential') {
-                    msj.innerText = "Credenciales incorrectas.";
-                } else {
-                    msj.innerText = "Error al iniciar sesión.";
-                }
-            }
+                    const rol = docSnap.data().rol;
+                    if (rol === 'admin') window.location.href = "admin-panel.html";
+                    else if (rol === 'profesional') window.location.href = "panel-profesional.html";
+                    else if (rol === 'prestador') window.location.href = "panel-prestador.html";
+                    else window.location.href = "panel-usuario.html"; 
+                } else window.location.href = "panel-usuario.html"; 
+            } catch (error) { mostrarLoader(false); msj.innerText = "Credenciales incorrectas."; }
         });
 
-        // LÓGICA DE REGISTRO UNIFICADO Y BLINDADO
+        // REGISTRO
         document.getElementById('btn-register').addEventListener('click', async () => {
             const email = document.getElementById('reg-email').value.trim();
             const pass = document.getElementById('reg-pass').value.trim();
@@ -443,69 +486,27 @@
             const rol = document.getElementById('reg-rol').value;
             const msj = document.getElementById('msj-register');
 
-            // Validaciones básicas
-            if (!email || !pass || !localidad) { msj.innerText = "Email, Contraseña y Localidad son obligatorios."; return; }
+            if (!email || !pass || !localidad) { msj.innerText = "Email, Contraseña y Localidad obligatorios."; return; }
             if (pass.length < 6) { msj.innerText = "La contraseña debe tener al menos 6 caracteres."; return; }
-            
-            // Validaciones condicionales
-            if (rol === 'profesional' && !document.getElementById('reg-prof-matricula').value.trim()) {
-                msj.innerText = "La matrícula es obligatoria para profesionales."; return;
-            }
-            if (rol === 'prestador' && !document.getElementById('reg-prest-nombre').value.trim()) {
-                msj.innerText = "El nombre del comercio es obligatorio."; return;
-            }
+            if (rol === 'profesional' && !document.getElementById('reg-prof-matricula').value.trim()) { msj.innerText = "La matrícula es obligatoria."; return; }
+            if (rol === 'prestador' && !document.getElementById('reg-prest-nombre').value.trim()) { msj.innerText = "El nombre del comercio es obligatorio."; return; }
 
-            msj.innerText = "";
-            mostrarLoader(true);
+            msj.innerText = ""; mostrarLoader(true);
 
             try {
-                // 1. Crear el usuario en Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                 const uid = userCredential.user.uid;
+                await setDoc(doc(db, "usuarios", uid), { email: email, rol: rol, localidad: localidad, plan: "gratis", fecha_registro: new Date().toISOString() });
 
-                // 2. Guardar en la colección MAESTRA "usuarios" (El blindaje)
-                await setDoc(doc(db, "usuarios", uid), {
-                    email: email,
-                    rol: rol,
-                    localidad: localidad,
-                    plan: "gratis", // Todos arrancan gratis
-                    fecha_registro: new Date().toISOString()
-                });
-
-                // 3. Si es Profesional, guardamos sus datos específicos en su colección
                 if (rol === 'profesional') {
-                    await setDoc(doc(db, "profesionales", uid), {
-                        email: email,
-                        nombre_veterinaria: document.getElementById('reg-prof-nombre').value.trim(),
-                        matricula: document.getElementById('reg-prof-matricula').value.trim(),
-                        localidad: localidad
-                    });
-                }
+                    await setDoc(doc(db, "profesionales", uid), { email: email, nombre_veterinaria: document.getElementById('reg-prof-nombre').value.trim(), matricula: document.getElementById('reg-prof-matricula').value.trim(), localidad: localidad });
+                    window.location.href = "panel-profesional.html";
+                } else if (rol === 'prestador') {
+                    await setDoc(doc(db, "prestadores", uid), { email: email, nombre_comercio: document.getElementById('reg-prest-nombre').value.trim(), tipo: document.getElementById('reg-prest-tipo').value, localidad: localidad });
+                    window.location.href = "panel-prestador.html";
+                } else window.location.href = "panel-usuario.html";
 
-                // 4. Si es Prestador, guardamos sus datos específicos en su colección
-                if (rol === 'prestador') {
-                    await setDoc(doc(db, "prestadores", uid), {
-                        email: email,
-                        nombre_comercio: document.getElementById('reg-prest-nombre').value.trim(),
-                        tipo: document.getElementById('reg-prest-tipo').value,
-                        localidad: localidad
-                    });
-                }
-
-                // 5. Redirección inteligente post-registro
-                if (rol === 'profesional') window.location.href = "panel-profesional.html";
-                else if (rol === 'prestador') window.location.href = "panel-prestador.html";
-                else window.location.href = "panel-usuario.html";
-
-            } catch (error) {
-                mostrarLoader(false);
-                console.error(error);
-                if (error.code === 'auth/email-already-in-use') {
-                    msj.innerText = "Ese correo ya está registrado.";
-                } else {
-                    msj.innerText = "Error al registrar la cuenta.";
-                }
-            }
+            } catch (error) { mostrarLoader(false); msj.innerText = "Error al registrar la cuenta."; }
         });
     </script>
 </body>
