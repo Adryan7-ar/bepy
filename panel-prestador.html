@@ -3,174 +3,659 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bepy Partner Hub | Profesional</title>
+    <title>Bepy | Panel de Prestador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #f59e0b; --dark: #1e293b; --bg: #f8fafc; --success: #10b981; --med: #6366f1; --danger: #ef4444; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--dark); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { 
+            --primary: #0ea5e9; 
+            --primary-dark: #0284c7; 
+            --dark: #0f172a; 
+            --panel: #1e293b; 
+            --text: #f8fafc; 
+            --bg-light: #f1f5f9;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --gold: #f59e0b;
+        }
         
-        /* SIDEBAR */
-        aside { width: 280px; background: var(--dark); color: white; padding: 25px; display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .logo { font-size: 1.4rem; font-weight: 900; margin-bottom: 40px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 14px 16px; cursor: pointer; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-weight: 600; margin-bottom: 5px; }
-        .nav-link:hover, .nav-link.active { background: #334155; color: white; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg-light); 
+            color: var(--dark); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
         
-        /* MAIN */
-        main { flex: 1; padding: 30px; overflow-y: auto; }
-        .section { display: none; animation: fadeIn 0.4s ease; }
-        .section.active { display: block; }
+        .panel-contenedor { 
+            width: 100%; 
+            max-width: 900px; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
         
-        /* CARDS & DASHBOARD */
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 25px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 5px solid var(--primary); }
+        /* CABECERA */
+        .cabecera { 
+            background: white; 
+            padding: 20px 25px; 
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 25px; 
+            border-left: 5px solid var(--gold);
+        }
         
-        /* BLOG & FEED */
-        .post-card { background: white; padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .cabecera-info h2 { 
+            margin: 0; 
+            color: var(--dark); 
+            font-size: 1.6rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
         
-        /* UTILIDADES */
-        .input-form { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
-        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-action:hover { background: #d97706; }
+        .cabecera-info p { 
+            margin: 5px 0 0 0; 
+            color: #64748b; 
+            font-size: 0.95rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px;
+        }
+
+        .badge-tipo {
+            background: #fef3c7;
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
         
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
+        .btn-salir { 
+            background: transparent; 
+            color: var(--danger); 
+            border: 1px solid var(--danger); 
+            padding: 8px 15px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.2s; 
+        }
+        
+        .btn-salir:hover { 
+            background: var(--danger); 
+            color: white; 
+        }
+
+        /* TABS DE NAVEGACIÓN */
+        .tabs { 
+            display: flex; 
+            background: white; 
+            border-radius: 16px; 
+            padding: 8px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            overflow-x: auto;
+        }
+        
+        .tab-btn { 
+            flex: 1; 
+            padding: 15px 20px; 
+            text-align: center; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: #64748b; 
+            transition: 0.3s; 
+            white-space: nowrap;
+        }
+        
+        .tab-btn.active { 
+            background: var(--bg-light); 
+            color: var(--primary); 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        
+        .tab-content { 
+            display: none; 
+            animation: fadeIn 0.4s ease; 
+        }
+        
+        .tab-content.active { 
+            display: block; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* FORMULARIOS Y TARJETAS */
+        .card-modulo {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-modulo h3 {
+            margin: 0 0 20px 0;
+            color: var(--dark);
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .grid-form { grid-template-columns: 1fr; }
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: bold; color: #475569; }
+        .input-form { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.2s; }
+        .input-form:focus { border-color: var(--primary); }
+
+        .btn-accion { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-accion:hover { background: var(--primary-dark); }
+        .btn-accion.verde { background: var(--success); }
+        .btn-accion.verde:hover { background: #059669; }
+        .btn-accion.rosa { background: #db2777; }
+        .btn-accion.rosa:hover { background: #be185d; }
+
+        /* LISTADOS DE TURNOS Y PUBLICACIONES */
+        .item-listado {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info h4 { margin: 0 0 5px 0; color: var(--dark); font-size: 1.1rem; }
+        .item-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
+        
+        .item-stats {
+            text-align: right;
+        }
+        .cupo-badge {
+            background: #e0f2fe;
+            color: var(--primary-dark);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .cupo-lleno {
+            background: #fee2e2;
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
 
-    <aside>
-        <div class="logo"><i class="fa-solid fa-store"></i> Bepy Partner Hub</div>
-        <div class="nav-link active" onclick="showSection('dashboard', this)"><i class="fa-solid fa-gauge"></i> Resumen de Negocio</div>
-        <div class="nav-link" onclick="showSection('agenda', this)"><i class="fa-solid fa-calendar-days"></i> Mi Agenda</div>
-        <div class="nav-link" onclick="showSection('validar', this)"><i class="fa-solid fa-qrcode"></i> Validar Cliente</div>
-        <div class="nav-link" id="nav-adopciones" onclick="showSection('adopciones', this)" style="display:none;"><i class="fa-solid fa-heart"></i> Adopciones</div>
-        <div class="nav-link" onclick="showSection('comunidad', this)"><i class="fa-solid fa-comments"></i> Comunidad Bepy</div>
-        <div class="nav-link" onclick="showSection('promos', this)"><i class="fa-solid fa-tags"></i> Marketing</div>
-        <button onclick="signOut(auth)" style="margin-top:auto; padding:12px; background:var(--danger); color:white; border:none; border-radius:10px; cursor:pointer;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</button>
-    </aside>
-
-    <main>
-        <!-- DASHBOARD PROFESIONAL -->
-        <section id="dashboard" class="section active">
-            <h1 id="welcome-title">Bienvenido, Partner</h1>
-            <div class="grid-3">
-                <div class="stat-card"><h4>Canjes realizados</h4><h2 id="stat-canjes">0</h2></div>
-                <div class="stat-card" style="border-left-color: var(--success);"><h4>Promos Activas</h4><h2 id="stat-promos">0</h2></div>
-                <div class="stat-card" style="border-left-color: var(--med);"><h4>Comunidad</h4><h2 id="stat-comunidad">--</h2></div>
+    <div class="panel-contenedor">
+        
+        <!-- CABECERA -->
+        <div class="cabecera">
+            <div class="cabecera-info">
+                <h2><i class="fa-solid fa-store" style="color: var(--gold);"></i> <span id="nombre-comercio">Cargando...</span></h2>
+                <p><i class="fa-solid fa-map-pin"></i> <span id="localidad-comercio">--</span> <span id="tipo-comercio" class="badge-tipo">--</span></p>
             </div>
-            <div class="card">
-                <h3><i class="fa-solid fa-bullhorn" style="color:var(--primary);"></i> Novedades de la Red</h3>
-                <div id="muro-comunidad"></div>
-            </div>
-        </section>
+            <button id="btn-salir" class="btn-salir">Cerrar Sesión</button>
+        </div>
 
-        <!-- AGENDA (NUEVA) -->
-        <section id="agenda" class="section">
-            <h1><i class="fa-solid fa-calendar-days"></i> Mi Agenda</h1>
-            <div class="card">
-                <h3>Programar Tarea / Turno</h3>
-                <input type="text" id="ag-titulo" class="input-form" placeholder="Tarea (Ej: Paseo Bruno)">
-                <input type="date" id="ag-fecha" class="input-form">
-                <button id="btn-guardar-agenda" class="btn-action">Guardar en Agenda</button>
-            </div>
-            <div id="lista-agenda"></div>
-        </section>
+        <!-- TABS DE NAVEGACIÓN -->
+        <div class="tabs">
+            <div class="tab-btn active" onclick="switchTab('turnos')"><i class="fa-solid fa-calendar-check"></i> Agenda y Turnos</div>
+            <div class="tab-btn" onclick="switchTab('promos')"><i class="fa-solid fa-tags"></i> Promociones</div>
+            <div class="tab-btn" id="tab-adopciones-btn" onclick="switchTab('adopciones')" style="display: none;"><i class="fa-solid fa-heart"></i> Adopciones</div>
+        </div>
 
-        <!-- VALIDAR CLIENTE -->
-        <section id="validar" class="section">
-            <div class="card">
-                <h2><i class="fa-solid fa-qrcode"></i> Validar Cliente Premium</h2>
-                <input type="text" id="input-codigo" class="input-form" placeholder="BEPY-XXXX">
-                <button id="btn-validar" class="btn-action">Validar Beneficio</button>
-                <div id="resultado-validacion" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
-            </div>
-        </section>
+        <!-- =========================================
+             MÓDULO 1: AGENDA Y TURNOS (PASEADORES / PELUQUERÍA)
+             ========================================= -->
+        <div id="tab-turnos" class="tab-content active">
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-clock"></i> Publicar Disponibilidad</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Definí tus horarios, precios y el link de pago para que los dueños reserven automáticamente.</p>
+                
+                <div class="grid-form">
+                    <div class="input-group">
+                        <label>Servicio Ofrecido</label>
+                        <input type="text" id="turno-servicio" class="input-form" placeholder="Ej: Paseo Grupal, Baño y Corte...">
+                    </div>
+                    <div class="input-group">
+                        <label>Fecha del Servicio</label>
+                        <input type="date" id="turno-fecha" class="input-form">
+                    </div>
+                    <div class="input-group">
+                        <label>Hora de Inicio</label>
+                        <input type="time" id="turno-hora" class="input-form">
+                    </div>
+                    <div class="input-group">
+                        <label>Cupo Máximo (Cantidad de mascotas)</label>
+                        <input type="number" id="turno-cupo" class="input-form" min="1" value="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Tamaño Permitido</label>
+                        <select id="turno-tamaño" class="input-form">
+                            <option value="Todos">Todos los tamaños</option>
+                            <option value="Pequeño/Mediano">Solo Pequeños y Medianos</option>
+                            <option value="Grande">Solo Grandes</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Precio Final ($)</label>
+                        <input type="number" id="turno-precio" class="input-form" placeholder="Ej: 5000">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Link de Pago (MercadoPago / Transferencia)</label>
+                    <input type="url" id="turno-link" class="input-form" placeholder="https://link.mercadopago.com.ar/...">
+                </div>
 
-        <!-- ADOPCIONES (ROLE BASED) -->
-        <section id="adopciones" class="section">
-            <h1>Refugio: Adopciones</h1>
-            <div class="card">
-                <input type="text" id="adop-nombre" class="input-form" placeholder="Nombre animal">
-                <button id="btn-post-adop" class="btn-action" style="background:var(--success);">Publicar Animal</button>
+                <button id="btn-crear-turno" class="btn-accion verde"><i class="fa-solid fa-plus"></i> Publicar Turno en la Red</button>
             </div>
-        </section>
 
-        <!-- COMUNIDAD Y PROMOS (Ya funcionales) -->
-        <section id="comunidad" class="section">
-            <h1>Comunidad Bepy</h1>
-            <div class="card">
-                <textarea id="blog-input" class="input-form" placeholder="Mensaje para la comunidad..."></textarea>
-                <button id="btn-postear" class="btn-main">Publicar</button>
+            <!-- Listado de Turnos Activos -->
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-list-check"></i> Mis Turnos Activos</h3>
+                <div id="lista-turnos">
+                    <p style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-circle-notch fa-spin"></i> Cargando agenda...</p>
+                </div>
             </div>
-            <div id="muro-comunidad"></div>
-        </section>
+        </div>
 
-        <section id="promos" class="section">
-            <h1>Promociones</h1>
-            <div class="card">
-                <input type="text" id="promo-titulo" class="input-form" placeholder="Título Promo">
-                <button id="btn-guardar-promo" class="btn-action">Activar Promo</button>
+        <!-- =========================================
+             MÓDULO 2: PROMOCIONES ZONALES
+             ========================================= -->
+        <div id="tab-promos" class="tab-content">
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-bullhorn"></i> Crear Promoción Bepy</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Llegá a los dueños de mascotas de tu zona ofreciendo descuentos exclusivos.</p>
+                
+                <div class="input-group">
+                    <label>Título de la Promo</label>
+                    <input type="text" id="promo-titulo" class="input-form" placeholder="Ej: 15% OFF en Alimento Premium">
+                </div>
+                <div class="input-group">
+                    <label>Descripción y Condiciones</label>
+                    <textarea id="promo-desc" class="input-form" rows="3" placeholder="Válido mostrando la credencial Bepy los días Jueves..."></textarea>
+                </div>
+
+                <button id="btn-crear-promo" class="btn-accion"><i class="fa-solid fa-paper-plane"></i> Publicar en el Radar</button>
             </div>
-        </section>
-    </main>
+            
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-tags"></i> Promociones Activas</h3>
+                <div id="lista-promos"></div>
+            </div>
+        </div>
 
-    <!-- CEREBRO FIREBASE INTEGRADO -->
+        <!-- =========================================
+             MÓDULO 3: RED DE ADOPCIÓN (SOLO REFUGIOS)
+             ========================================= -->
+        <div id="tab-adopciones" class="tab-content">
+            <div class="card-modulo">
+                <h3 style="color:#db2777;"><i class="fa-solid fa-house-chimney-crack"></i> Publicar Mascota en Adopción</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Buscale un hogar a los rescatados conectando con dueños responsables.</p>
+                
+                <div class="grid-form">
+                    <div class="input-group">
+                        <label>Nombre del Animal</label>
+                        <input type="text" id="adopcion-nombre" class="input-form" placeholder="Ej: Firulais">
+                    </div>
+                    <div class="input-group">
+                        <label>Especie</label>
+                        <select id="adopcion-especie" class="input-form">
+                            <option value="perro">Perro</option>
+                            <option value="gato">Gato</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Breve Historia / Descripción</label>
+                    <textarea id="adopcion-desc" class="input-form" rows="2" placeholder="Fue rescatado en la ruta. Es muy cariñoso y se lleva bien con chicos."></textarea>
+                </div>
+
+                <button id="btn-crear-adopcion" class="btn-accion rosa"><i class="fa-solid fa-heart"></i> Subir a la Red de Adopción</button>
+            </div>
+            
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-paw"></i> Mis Animales en Búsqueda</h3>
+                <div id="lista-adopciones"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CEREBRO FIREBASE GLOBAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-lite.js";
+        import { getFirestore, collection, addDoc, query, where, doc, getDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const db = getFirestore(initializeApp({ apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", authDomain: "bepy-salud-mascota.firebaseapp.com", projectId: "bepy-salud-mascota" }));
-        const auth = getAuth();
-        let comercioActual = null; let totalCanjes = 0;
+        // ==========================================
+        // CONFIGURACIÓN
+        // ==========================================
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", 
+            authDomain: "bepy-salud-mascota.firebaseapp.com", 
+            projectId: "bepy-salud-mascota" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "bepy-data");
 
+        let usuarioActual = null;
+        let datosComercio = null;
+
+        // ==========================================
+        // CONTROL DE SESIÓN Y CARGA DE PERFIL
+        // ==========================================
         onAuthStateChanged(auth, async (user) => {
-            if (!user) window.location.href = "index.html";
-            else {
-                comercioActual = user;
-                const snap = await getDoc(doc(db, "prestadores", user.uid));
-                if(snap.exists()){
-                    const data = snap.data();
-                    document.getElementById('welcome-title').innerText = `Hola, ${data.nombre_comercio}`;
-                    document.getElementById('stat-role').innerText = data.role.toUpperCase();
-                    if(data.role === 'refugio') document.getElementById('nav-adopciones').style.display = 'flex';
-                }
-                cargarData();
+            if (!user) {
+                window.location.href = "index.html"; 
+            } else { 
+                usuarioActual = user; 
+                await cargarPerfilPrestador(user.uid);
+                iniciarEscuchas(user.uid);
             }
         });
 
-        // NAVEGACIÓN
-        window.showSection = (id, el) => {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); el.classList.add('active');
+        document.getElementById('btn-salir').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // ==========================================
+        // UI: CONTROL DE TABS
+        // ==========================================
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Buscar el botón clickeado
+            const btns = document.querySelectorAll('.tab-btn');
+            if(tab === 'turnos') btns[0].classList.add('active');
+            else if(tab === 'promos') btns[1].classList.add('active');
+            else if(tab === 'adopciones') document.getElementById('tab-adopciones-btn').classList.add('active');
+
+            document.getElementById('tab-' + tab).classList.add('active');
         };
 
-        // LÓGICA DE NEGOCIO (PRESERVADA)
-        async function cargarData() {
-            // Carga de Promos
-            const res = await getDocs(query(collection(db, "promociones"), where("comercio_email", "==", comercioActual.email)));
-            document.getElementById('stat-promos').innerText = res.size;
-            
-            // Carga de Blog
-            const blog = await getDocs(collection(db, "novedades_veterinarias"));
-            document.getElementById('stat-comunidad').innerText = blog.size;
+        // ==========================================
+        // LÓGICA DE DATOS
+        // ==========================================
+        async function cargarPerfilPrestador(uid) {
+            try {
+                const docRef = doc(db, "prestadores", uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    datosComercio = docSnap.data();
+                    document.getElementById('nombre-comercio').innerText = datosComercio.nombre_comercio;
+                    document.getElementById('localidad-comercio').innerText = datosComercio.localidad;
+                    document.getElementById('tipo-comercio').innerText = datosComercio.tipo;
+
+                    // Si es un refugio, le habilitamos la pestaña de adopciones
+                    if (datosComercio.tipo.toLowerCase() === 'refugio') {
+                        document.getElementById('tab-adopciones-btn').style.display = 'block';
+                    }
+                } else {
+                    alert("Error: No se encontró el perfil de prestador.");
+                }
+            } catch (error) {
+                console.error("Error obteniendo datos del comercio:", error);
+            }
         }
 
-        // VALIDADOR (IDEM ANTERIOR)
-        document.getElementById('btn-validar').addEventListener('click', async () => {
-            const codigo = document.getElementById('input-codigo').value.toUpperCase();
-            const res = await getDocs(query(collection(db, "mascotas"), where("codigo_bepy", "==", codigo)));
-            const div = document.getElementById('resultado-validacion');
-            div.style.display = "block";
-            if(!res.empty) {
-                totalCanjes++; document.getElementById('stat-canjes').innerText = totalCanjes;
-                div.style.background = "#dcfce7"; div.innerText = "¡Validado!";
-            } else {
-                div.style.background = "#fee2e2"; div.innerText = "Código incorrecto.";
+        // ==========================================
+        // ESCUCHAS EN TIEMPO REAL (ONSNAPSHOT)
+        // ==========================================
+        function iniciarEscuchas(uid) {
+            
+            // 1. Escuchar Agenda / Turnos
+            const qTurnos = query(collection(db, "turnos_prestador"), where("prestador_uid", "==", uid));
+            onSnapshot(qTurnos, (snapshot) => {
+                const lista = document.getElementById('lista-turnos');
+                lista.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    lista.innerHTML = `<p style="text-align:center; color:#94a3b8;">Aún no publicaste disponibilidad.</p>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const t = doc.data();
+                    const id = doc.id;
+                    const estaLleno = t.reservas_actuales >= t.cupo_maximo;
+                    const claseBadge = estaLleno ? "cupo-badge cupo-lleno" : "cupo-badge";
+                    const textoBadge = estaLleno ? "¡Cupo Lleno!" : `${t.reservas_actuales} / ${t.cupo_maximo} Reservados`;
+
+                    lista.innerHTML += `
+                        <div class="item-listado">
+                            <div class="item-info">
+                                <h4>${t.servicio}</h4>
+                                <p><i class="fa-regular fa-calendar"></i> ${t.fecha} a las ${t.hora}hs</p>
+                                <p><i class="fa-solid fa-dog"></i> Tamaño: ${t.tamaños} | <i class="fa-solid fa-money-bill"></i> Precio: $${t.precio}</p>
+                            </div>
+                            <div class="item-stats">
+                                <span class="${claseBadge}">${textoBadge}</span><br>
+                                <button onclick="window.borrarTurno('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem; margin-top:5px; text-decoration:underline;">Eliminar Turno</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // 2. Escuchar Promociones
+            const qPromos = query(collection(db, "promociones"), where("prestador_uid", "==", uid));
+            onSnapshot(qPromos, (snapshot) => {
+                const lista = document.getElementById('lista-promos');
+                lista.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    lista.innerHTML = `<p style="text-align:center; color:#94a3b8;">No tenés promos activas.</p>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const p = doc.data();
+                    lista.innerHTML += `
+                        <div class="item-listado" style="border-left: 4px solid var(--primary);">
+                            <div class="item-info">
+                                <h4>${p.titulo}</h4>
+                                <p>${p.descripcion}</p>
+                            </div>
+                            <button onclick="window.borrarDoc('promociones', '${doc.id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            });
+
+            // 3. Escuchar Adopciones (Si es refugio)
+            const qAdopciones = query(collection(db, "adopciones"), where("refugio_id", "==", uid));
+            onSnapshot(qAdopciones, (snapshot) => {
+                const lista = document.getElementById('lista-adopciones');
+                lista.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    lista.innerHTML = `<p style="text-align:center; color:#94a3b8;">No publicaste adopciones.</p>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const a = doc.data();
+                    const estado = a.estado === 'disponible' ? '<span style="color:var(--success); font-weight:bold;">Disponible</span>' : '<span style="color:#64748b;">Adoptado</span>';
+                    
+                    lista.innerHTML += `
+                        <div class="item-listado">
+                            <div class="item-info">
+                                <h4>${a.mascota_nombre} (${a.especie})</h4>
+                                <p>Estado: ${estado}</p>
+                            </div>
+                            <button onclick="window.cambiarEstadoAdopcion('${doc.id}', '${a.estado}')" style="background:transparent; border:1px solid #cbd5e1; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:0.8rem;">Cambiar Estado</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // ==========================================
+        // CREACIÓN DE DATOS (TURNOS, PROMOS, ADOPCIONES)
+        // ==========================================
+
+        // 1. Crear Turno
+        document.getElementById('btn-crear-turno').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-crear-turno');
+            const servicio = document.getElementById('turno-servicio').value;
+            const fecha = document.getElementById('turno-fecha').value;
+            const hora = document.getElementById('turno-hora').value;
+            const cupo = parseInt(document.getElementById('turno-cupo').value);
+            const precio = parseInt(document.getElementById('turno-precio').value);
+            const tamaños = document.getElementById('turno-tamaño').value;
+            const link = document.getElementById('turno-link').value;
+
+            if(!servicio || !fecha || !hora || !precio || !link) {
+                alert("Por favor, completá todos los campos y pegá tu link de cobro.");
+                return;
+            }
+
+            btn.disabled = true; btn.innerHTML = "Publicando...";
+
+            try {
+                await addDoc(collection(db, "turnos_prestador"), {
+                    prestador_uid: usuarioActual.uid,
+                    comercio_nombre: datosComercio.nombre_comercio,
+                    localidad: datosComercio.localidad,
+                    servicio: servicio,
+                    fecha: fecha,
+                    hora: hora,
+                    cupo_maximo: cupo,
+                    reservas_actuales: 0, // Arranca en cero
+                    precio: precio,
+                    tamaños: tamaños,
+                    link_pago: link,
+                    estado: 'activo',
+                    fecha_creacion: new Date()
+                });
+                
+                // Limpiar campos
+                document.getElementById('turno-servicio').value = "";
+                document.getElementById('turno-precio').value = "";
+                document.getElementById('turno-link').value = "";
+                
+            } catch(e) {
+                console.error("Error al crear turno", e);
+                alert("Error de conexión.");
+            } finally {
+                btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-plus"></i> Publicar Turno en la Red`;
             }
         });
+
+        // 2. Crear Promo
+        document.getElementById('btn-crear-promo').addEventListener('click', async () => {
+            const titulo = document.getElementById('promo-titulo').value;
+            const desc = document.getElementById('promo-desc').value;
+
+            if(!titulo || !desc) { alert("Completá título y descripción."); return; }
+
+            try {
+                await addDoc(collection(db, "promociones"), {
+                    prestador_uid: usuarioActual.uid,
+                    comercio_nombre: datosComercio.nombre_comercio,
+                    localidad: datosComercio.localidad,
+                    titulo: titulo,
+                    descripcion: desc,
+                    estado: 'activa',
+                    fecha_creacion: new Date()
+                });
+                document.getElementById('promo-titulo').value = "";
+                document.getElementById('promo-desc').value = "";
+            } catch(e) { console.error(e); }
+        });
+
+        // 3. Crear Adopción
+        document.getElementById('btn-crear-adopcion').addEventListener('click', async () => {
+            const nombre = document.getElementById('adopcion-nombre').value;
+            const especie = document.getElementById('adopcion-especie').value;
+            const desc = document.getElementById('adopcion-desc').value;
+
+            if(!nombre) { alert("El nombre es obligatorio."); return; }
+
+            try {
+                await addDoc(collection(db, "adopciones"), {
+                    refugio_id: usuarioActual.uid,
+                    refugio_nombre: datosComercio.nombre_comercio,
+                    localidad: datosComercio.localidad,
+                    mascota_nombre: nombre,
+                    especie: especie,
+                    descripcion: desc,
+                    estado: 'disponible',
+                    fecha_publicacion: new Date().toISOString()
+                });
+                document.getElementById('adopcion-nombre').value = "";
+                document.getElementById('adopcion-desc').value = "";
+            } catch(e) { console.error(e); }
+        });
+
+        // ==========================================
+        // FUNCIONES DE EDICIÓN Y BORRADO RÁPIDO
+        // ==========================================
+        window.borrarTurno = async function(id) {
+            if(confirm("¿Eliminar este turno? Los dueños ya no podrán reservarlo.")) {
+                await deleteDoc(doc(db, "turnos_prestador", id));
+            }
+        };
+
+        window.borrarDoc = async function(coleccion, id) {
+            if(confirm("¿Eliminar publicación?")) {
+                await deleteDoc(doc(db, coleccion, id));
+            }
+        };
+
+        window.cambiarEstadoAdopcion = async function(id, estadoActual) {
+            const nuevoEstado = estadoActual === 'disponible' ? 'adoptado' : 'disponible';
+            await updateDoc(doc(db, "adopciones", id), { estado: nuevoEstado });
+        };
     </script>
 </body>
 </html>
