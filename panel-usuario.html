@@ -425,7 +425,7 @@
             border: 1px solid #e0f2fe; 
         }
         
-        /* Grid Acciones Rápidas (Fase 3/4) */
+        /* Grid Acciones Rápidas (Fase 3/4/5) */
         .quick-actions { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
@@ -962,6 +962,16 @@
             border-radius: 8px; 
             background: white; 
         }
+
+        /* ESTILOS NUEVOS PARA TARJETAS DE RESERVA (FASE 5) */
+        .tarjeta-reserva { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; position: relative; }
+        .tarjeta-reserva h4 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--dark); }
+        .tarjeta-reserva p { margin: 0 0 10px 0; font-size: 0.85rem; color: #475569; }
+        .tarjeta-reserva .btn-accion-reserva { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        .tarjeta-reserva .btn-accion-reserva:hover { background: var(--primary-dark); }
+        .tarjeta-reserva .btn-ride { background: #8b5cf6; } /* Usando color de bepyride */
+        .tarjeta-reserva .btn-ride:hover { opacity: 0.9; }
+        .badge-precio { position: absolute; top: 15px; right: 15px; background: #dcfce7; color: var(--success); padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -990,18 +1000,18 @@
                 <span id="txt-localidad" class="badge-localidad"><i class="fa-solid fa-spinner fa-spin"></i></span>
             </div>
 
-            <!-- Botonera de Acciones Rápidas (Próximamente Fase 3) -->
+            <!-- Botonera de Acciones Rápidas (AHORA CONECTADAS - FASE 5) -->
             <div class="quick-actions">
-                <div class="action-btn" onclick="alert('Módulo de Turnos en Desarrollo (Fase 3)')">
-                    <i class="fa-solid fa-scissors" style="color: #db2777;"></i><span>Peluquería</span>
+                <div class="action-btn" onclick="abrirModalReservas('turnos')">
+                    <i class="fa-solid fa-scissors" style="color: #db2777;"></i><span>Servicios</span>
                 </div>
-                <div class="action-btn" onclick="alert('Motor de Cotizaciones en Desarrollo (Fase 3)')">
+                <div class="action-btn" onclick="abrirModalCotizar()">
                     <i class="fa-solid fa-file-invoice-dollar" style="color: var(--success);"></i><span>Cotizar</span>
                 </div>
-                <div class="action-btn" onclick="alert('Módulo de Choferes en Desarrollo (Fase 4)')">
-                    <i class="fa-solid fa-car-side" style="color: var(--gold);"></i><span>BepyRide</span>
+                <div class="action-btn" onclick="abrirModalReservas('rutas')">
+                    <i class="fa-solid fa-car-side" style="color: #f59e0b;"></i><span>BepyRide</span>
                 </div>
-                <div class="action-btn" onclick="alert('Módulo de Paseadores en Desarrollo (Fase 3)')">
+                <div class="action-btn" onclick="abrirModalReservas('turnos')">
                     <i class="fa-solid fa-shoe-prints" style="color: var(--primary-dark);"></i><span>Paseador</span>
                 </div>
             </div>
@@ -1025,6 +1035,57 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- =========================================
+         NUEVOS MODALES DE TRANSACCIONES (FASE 5)
+         ========================================= -->
+
+    <!-- Modal Reservas de Turnos (Peluquería / Paseador) -->
+    <div id="modal-reservas-turnos" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-reservas-turnos').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top:0; color:var(--dark);"><i class="fa-solid fa-calendar-check" style="color:var(--primary);"></i> Turnos Disponibles</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Reservá el servicio para tu mascota y pagá de forma segura a través del comercio.</p>
+            <div id="lista-turnos-disp"></div>
+        </div>
+    </div>
+
+    <!-- Modal Reservas BepyRide (Viajes/Rutas) -->
+    <div id="modal-reservas-rutas" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-reservas-rutas').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top:0; color:var(--dark);"><i class="fa-solid fa-car-side" style="color:#f59e0b;"></i> Rutas BepyRide</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Asegurá el traslado de tu mascota reservando un lugar en los viajes programados por choferes verificados.</p>
+            <div id="lista-rutas-disp"></div>
+        </div>
+    </div>
+
+    <!-- Modal Motor de Cotizaciones -->
+    <div id="modal-cotizar" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-cotizar').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top:0; color:var(--success);"><i class="fa-solid fa-file-invoice-dollar"></i> Solicitar Cotización</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Enviaremos tu pedido a las veterinarias de tu zona. Te responderán a tu email con el presupuesto.</p>
+            
+            <div class="input-group">
+                <label>Mascota a atender</label>
+                <select id="cotizar-mascota" class="input-form">
+                    <option value="">Cargando mis mascotas...</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Servicio Requerido</label>
+                <select id="cotizar-servicio" class="input-form">
+                    <option value="Castración">Cirugía: Castración</option>
+                    <option value="Limpieza Dental">Profilaxis (Limpieza Dental)</option>
+                    <option value="Ecografía">Estudio: Ecografía</option>
+                    <option value="Consulta a Domicilio">Consulta a Domicilio</option>
+                </select>
+            </div>
+            <button id="btn-enviar-cotizacion" class="btn-wizard" style="background:var(--success); color:white; width:100%;"><i class="fa-solid fa-paper-plane"></i> Enviar a Veterinarias</button>
+            <p id="msj-cotizacion" style="text-align:center; color:var(--success); font-weight:bold; margin-top:15px;"></p>
+        </div>
     </div>
 
     <!-- MODAL SOS: REPORTAR PÉRDIDA -->
@@ -1217,6 +1278,7 @@
         let fotoBase64Global = null; 
         let datosMascotaAbierta = null; 
         let vacunasParaPDF = [];
+        let listaMisMascotasNombres = []; // Para el cotizador
 
         // ==========================================
         // CONTROL DE SESIÓN
@@ -1236,11 +1298,163 @@
         });
 
         // ==========================================
+        // FASE 5: MOTOR DE RESERVAS Y COTIZACIONES
+        // ==========================================
+        window.abrirModalReservas = async function(tipo) {
+            if(tipo === 'turnos') {
+                document.getElementById('modal-reservas-turnos').style.display = 'flex';
+                const lista = document.getElementById('lista-turnos-disp');
+                lista.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-circle-notch fa-spin"></i> Buscando servicios disponibles...</p>';
+                
+                try {
+                    const q = query(collection(db, "turnos_prestador"), where("estado", "==", "activo"));
+                    const snapshot = await getDocs(q);
+                    lista.innerHTML = "";
+                    let hay = false;
+
+                    snapshot.forEach(docSnap => {
+                        const t = docSnap.data();
+                        if(t.reservas_actuales < t.cupo_maximo) {
+                            hay = true;
+                            lista.innerHTML += `
+                                <div class="tarjeta-reserva">
+                                    <span class="badge-precio">$${t.precio}</span>
+                                    <h4>${t.servicio}</h4>
+                                    <p><i class="fa-solid fa-store"></i> ${t.comercio_nombre} (${t.localidad})</p>
+                                    <p><i class="fa-regular fa-calendar"></i> ${t.fecha} a las ${t.hora}hs</p>
+                                    <button class="btn-accion-reserva" onclick="window.confirmarReservaTurno('${docSnap.id}', ${t.reservas_actuales}, '${t.link_pago}')">Reservar y Pagar</button>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    if(!hay) lista.innerHTML = '<p style="text-align:center; color:#64748b;">No hay turnos con cupo disponible en este momento.</p>';
+                } catch(error) {
+                    console.error("Error al buscar turnos:", error);
+                }
+            } else if (tipo === 'rutas') {
+                document.getElementById('modal-reservas-rutas').style.display = 'flex';
+                const lista = document.getElementById('lista-rutas-disp');
+                lista.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-circle-notch fa-spin"></i> Buscando choferes en ruta...</p>';
+                
+                try {
+                    const q = query(collection(db, "rutas_choferes"), where("estado", "==", "activa"));
+                    const snapshot = await getDocs(q);
+                    lista.innerHTML = "";
+                    let hay = false;
+
+                    snapshot.forEach(docSnap => {
+                        const r = docSnap.data();
+                        if(r.cupo_disponible > 0) {
+                            hay = true;
+                            lista.innerHTML += `
+                                <div class="tarjeta-reserva" style="border-left: 4px solid var(--bepyride);">
+                                    <span class="badge-precio" style="color:white; background:var(--bepyride);">$${r.precio} p/Lugar</span>
+                                    <h4>${r.origen} <i class="fa-solid fa-arrow-right" style="font-size:0.8rem; color:#94a3b8;"></i> ${r.destino}</h4>
+                                    <p><i class="fa-solid fa-user"></i> Chofer: ${r.chofer_nombre}</p>
+                                    <p><i class="fa-regular fa-calendar"></i> ${r.fecha} - ${r.hora}hs</p>
+                                    <p style="color:var(--bepyride); font-weight:bold;">${r.cupo_disponible} Lugares Disponibles</p>
+                                    <button class="btn-accion-reserva btn-ride" onclick="window.confirmarReservaRuta('${docSnap.id}', ${r.cupo_disponible})">Reservar 1 Lugar</button>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    if(!hay) lista.innerHTML = '<p style="text-align:center; color:#64748b;">No hay viajes programados con lugar en este momento.</p>';
+                } catch(error) {
+                    console.error("Error al buscar rutas:", error);
+                }
+            }
+        };
+
+        window.confirmarReservaTurno = async function(idTurno, reservasActuales, linkPago) {
+            if(confirm("Estás por asegurar este turno para tu mascota. Serás redirigido al link de pago del comercio. ¿Continuar?")) {
+                try {
+                    await updateDoc(doc(db, "turnos_prestador", idTurno), {
+                        reservas_actuales: reservasActuales + 1
+                    });
+                    
+                    alert("¡Turno reservado con éxito! Recordá llevar tu credencial digital Bepy.");
+                    document.getElementById('modal-reservas-turnos').style.display = 'none';
+                    
+                    if(linkPago && linkPago !== "") {
+                        window.open(linkPago, '_blank');
+                    }
+                } catch (error) {
+                    console.error("Error al reservar turno:", error);
+                    alert("Error al intentar procesar la reserva.");
+                }
+            }
+        };
+
+        window.confirmarReservaRuta = async function(idRuta, cupoDisponible) {
+            if(confirm("¿Estás seguro que querés reservar 1 lugar en este viaje para tu mascota? El pago se coordina con el chofer.")) {
+                try {
+                    await updateDoc(doc(db, "rutas_choferes", idRuta), {
+                        cupo_disponible: cupoDisponible - 1
+                    });
+                    
+                    alert("¡Lugar asegurado en el viaje! El chofer se contactará a tu email registrado.");
+                    document.getElementById('modal-reservas-rutas').style.display = 'none';
+                } catch (error) {
+                    console.error("Error al reservar viaje:", error);
+                    alert("Error al intentar procesar la reserva del viaje.");
+                }
+            }
+        };
+
+        window.abrirModalCotizar = function() {
+            const select = document.getElementById('cotizar-mascota');
+            select.innerHTML = "";
+            
+            if(listaMisMascotasNombres.length === 0) {
+                select.innerHTML = '<option value="">No tenés mascotas cargadas.</option>';
+                document.getElementById('btn-enviar-cotizacion').disabled = true;
+            } else {
+                listaMisMascotasNombres.forEach(nombre => {
+                    select.innerHTML += `<option value="${nombre}">${nombre}</option>`;
+                });
+                document.getElementById('btn-enviar-cotizacion').disabled = false;
+            }
+            
+            document.getElementById('msj-cotizacion').innerText = "";
+            document.getElementById('modal-cotizar').style.display = 'flex';
+        };
+
+        document.getElementById('btn-enviar-cotizacion').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-enviar-cotizacion');
+            const msj = document.getElementById('msj-cotizacion');
+            
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Enviando a Veterinarias...";
+            btn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, "solicitudes_cotizacion"), {
+                    usuario_uid: usuarioActual.uid,
+                    usuario_email: usuarioActual.email,
+                    mascota: document.getElementById('cotizar-mascota').value,
+                    servicio: document.getElementById('cotizar-servicio').value,
+                    fecha_solicitud: new Date(),
+                    estado: "Enviado"
+                });
+                
+                msj.style.color = "var(--success)";
+                msj.innerText = "¡Solicitud enviada a la red Bepy! Revisa tu email pronto.";
+                setTimeout(() => { document.getElementById('modal-cotizar').style.display = 'none'; }, 2500);
+            } catch(e) {
+                msj.style.color = "var(--danger)";
+                msj.innerText = "Error al enviar la solicitud.";
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Enviar a Veterinarias`;
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
         // CARGAR BEPY HUB (COMUNIDAD Y BENEFICIOS)
         // ==========================================
         async function cargarDatosZonalesYAdopciones(uid) {
             try {
-                // 1. Obtener la localidad del usuario actual
                 const userDoc = await getDoc(doc(db, "usuarios", uid));
                 let localidadUsuario = "Sin definir";
                 if(userDoc.exists() && userDoc.data().localidad) {
@@ -1248,10 +1462,8 @@
                 }
                 document.getElementById('txt-localidad').innerText = localidadUsuario;
 
-                // 2. Inyectar Muro Social Dinámico
                 generarMuroSocial(localidadUsuario);
 
-                // 3. Buscar Comercios y Promociones en su zona
                 const comerciosCont = document.getElementById('carrusel-comercios');
                 comerciosCont.innerHTML = "";
                 const qComercios = query(collection(db, "prestadores"), where("localidad", "==", localidadUsuario));
@@ -1272,7 +1484,6 @@
                     });
                 }
 
-                // 4. Buscar Adopciones en tiempo real
                 const adopcionesCont = document.getElementById('carrusel-adopciones');
                 const qAdop = query(collection(db, "adopciones"), where("estado", "==", "disponible"));
                 
@@ -1295,15 +1506,12 @@
                             `;
                         });
                     }
-                }, (error) => {
-                    console.error("Error al escuchar adopciones:", error);
                 });
             } catch (error) { 
                 console.error("Error al cargar datos zonales:", error); 
             }
         }
 
-        // Función para inyectar posts locales en el Muro Social
         function generarMuroSocial(localidad) {
             const muro = document.getElementById('muro-experiencias');
             muro.innerHTML = `
@@ -1344,6 +1552,7 @@
             const contenedor = document.getElementById('contenedor-credenciales');
             const contAlertas = document.getElementById('contenedor-alertas');
             contAlertas.innerHTML = ""; 
+            listaMisMascotasNombres = []; // Limpiamos para el cotizador
 
             try {
                 const q = query(collection(db, "mascotas"), where("dueño_uid", "==", usuarioActual.uid));
@@ -1367,10 +1576,11 @@
                     const idMascota = docSnapshot.id;
                     const estaPerdida = datos.estado_sos === true;
                     
+                    listaMisMascotasNombres.push(datos.nombre); // Guardamos el nombre para el Select de Cotización
+
                     let estadoSanitarioHtml = `<div class="punto-verde"></div>Al día`;
                     let mascotaEnRiesgo = false;
 
-                    // CHEQUEO DE VACUNAS (Motor Smart)
                     if (!estaPerdida) {
                         const qVac = query(collection(db, "vacunas"), where("mascota_id", "==", idMascota));
                         const resVac = await getDocs(qVac);
@@ -1416,7 +1626,6 @@
                         });
                     }
 
-                    // DIBUJADO DE TARJETA CREDENCIAL
                     const visualFoto = datos.fotoBase64 ? `<img src="${datos.fotoBase64}">` : `<i class="fa-solid ${datos.especie === 'gato' ? 'fa-cat' : 'fa-dog'}"></i>`;
                     const datosString = encodeURIComponent(JSON.stringify(datos)); 
                     
@@ -1470,7 +1679,6 @@
                     `;
                     contenedor.innerHTML += tarjetaHTML;
                     
-                    // Renderizamos el QR después de inyectar el HTML
                     setTimeout(() => { 
                         new QRCode(document.getElementById(`qr-${datos.codigo_bepy}`), { 
                             text: datos.codigo_bepy, 
@@ -1554,7 +1762,6 @@
             contConsultas.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Buscando...</p>';
 
             try {
-                // Traer Vacunas
                 const resVac = await getDocs(query(collection(db, "vacunas"), where("mascota_id", "==", idMascota)));
                 vacunasParaPDF = []; 
                 
@@ -1583,7 +1790,6 @@
                     });
                 }
                 
-                // Traer Consultas Médicas
                 const resCons = await getDocs(query(collection(db, "consultas"), where("mascota_id", "==", idMascota)));
                 if(resCons.empty) { 
                     contConsultas.innerHTML = '<p style="font-size:0.85rem; color:#64748b; text-align:center;">No hay historial clínico.</p>'; 
@@ -1608,15 +1814,11 @@
             }
         }
 
-        // ==========================================
-        // GENERACIÓN DE CERTIFICADO PDF
-        // ==========================================
         document.getElementById('btn-descargar-pdf').addEventListener('click', () => {
             const btn = document.getElementById('btn-descargar-pdf');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando Sello Criptográfico...'; 
             btn.disabled = true;
 
-            // Rellenar Plantilla
             document.getElementById('pdf-nombre').innerText = datosMascotaAbierta.nombre;
             document.getElementById('pdf-raza').innerText = `${datosMascotaAbierta.especie} - ${datosMascotaAbierta.raza}`;
             document.getElementById('pdf-edadpeso').innerText = `${datosMascotaAbierta.edad} años / ${datosMascotaAbierta.peso} kg`;
@@ -1641,7 +1843,6 @@
             document.getElementById('pdf-fecha-emision').innerText = ahora.toLocaleString('es-AR');
             document.getElementById('pdf-hash').innerText = "TX-" + btoa(ahora.getTime().toString()).substring(0, 15).toUpperCase();
             
-            // Generar QR para el PDF
             const qrContainer = document.getElementById('pdf-qr'); 
             qrContainer.innerHTML = ""; 
             new QRCode(qrContainer, { 
@@ -1652,7 +1853,6 @@
                 colorLight : "#ffffff" 
             });
 
-            // Dar tiempo a que el QR se dibuje y ejecutar PDF
             setTimeout(() => {
                 const elemento = document.getElementById('plantilla-pdf');
                 const opciones = { 
@@ -1702,7 +1902,6 @@
             document.getElementById(`mascota-${tipo}`).value = el.getAttribute('data-valor'); 
         };
         
-        // Carga de Foto en Base64
         document.getElementById('mascota-foto').addEventListener('change', function(e) {
             const file = e.target.files[0]; 
             if (!file) return; 
@@ -1726,7 +1925,6 @@
             reader.readAsDataURL(file);
         });
 
-        // Guardar Mascota en Firebase
         document.getElementById('btn-guardar-mascota').addEventListener('click', async () => {
             const btn = document.getElementById('btn-guardar-mascota');
             btn.innerText = "Creando Credencial...";
@@ -1752,7 +1950,7 @@
                 document.getElementById('modal-mascota').style.display = 'none'; 
                 btn.innerText = "Crear Credencial";
                 btn.disabled = false;
-                cargarMisMascotas(); // Recarga la lista de mascotas
+                cargarMisMascotas(); 
                 
             } catch (error) {
                 console.error("Error al guardar la mascota:", error);
