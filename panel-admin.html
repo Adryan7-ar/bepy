@@ -86,6 +86,9 @@
         .btn-guardar { width: 100%; background: var(--success); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .btn-cerrar-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="apple-touch-icon" href="icono-192.png">
 </head>
 <body>
 
@@ -574,6 +577,15 @@
             elemento.style.background = fondoOriginal;
             document.querySelectorAll('.crm-box h2').forEach(el => el.style.color = ""); 
             btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Exportar a PDF'; btn.disabled = false;
+        });
+    }
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Motor PWA Activado', reg.scope))
+                .catch(err => console.error('Error al iniciar PWA', err));
         });
     }
 </script>

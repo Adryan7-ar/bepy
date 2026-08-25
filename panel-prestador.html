@@ -227,6 +227,9 @@
             color: var(--danger);
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="apple-touch-icon" href="icono-192.png">
 </head>
 <body>
 
@@ -657,5 +660,14 @@
             await updateDoc(doc(db, "adopciones", id), { estado: nuevoEstado });
         };
     </script>
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log('Motor PWA Activado', reg.scope))
+                        .catch(err => console.error('Error al iniciar PWA', err));
+                });
+            }
+        </script>
 </body>
 </html>
