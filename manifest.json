@@ -1,0 +1,22 @@
+{
+  "name": "Bepy - Ecosistema Animal",
+  "short_name": "Bepy",
+  "description": "Billetera sanitaria oficial, radar S.O.S y red de beneficios para tu mascota.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e0f2fe",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
