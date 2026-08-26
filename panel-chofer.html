@@ -16,7 +16,7 @@
             --success: #10b981; 
             --warning: #f59e0b; 
             --danger: #ef4444; 
-            --bepyride: #8b5cf6; /* Color distintivo para logística */
+            --bepyride: #8b5cf6;
         }
         
         body { 
@@ -239,6 +239,7 @@
         .resena-texto { color: #475569; font-size: 0.95rem; font-style: italic; margin: 0; }
         .badge-solidario { display: inline-flex; align-items: center; gap: 5px; background: #fdf2f8; color: #db2777; padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; margin-top: 10px; }
     </style>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0ea5e9">
     <link rel="apple-touch-icon" href="icono-192.png">
@@ -269,9 +270,7 @@
             <div class="tab-btn" onclick="switchTab('reputacion')"><i class="fa-solid fa-star"></i> Reputación</div>
         </div>
 
-        <!-- =========================================
-             MÓDULO 1: RADAR DE VIAJES EXPRESS
-             ========================================= -->
+        <!-- MÓDULO 1: RADAR DE VIAJES EXPRESS -->
         <div id="tab-radar" class="tab-content active">
             <div class="card-modulo">
                 <h3><i class="fa-solid fa-location-crosshairs"></i> Solicitudes Inmediatas</h3>
@@ -286,9 +285,7 @@
             </div>
         </div>
 
-        <!-- =========================================
-             MÓDULO 2: RUTAS PROGRAMADAS (POOL BepyRide)
-             ========================================= -->
+        <!-- MÓDULO 2: RUTAS PROGRAMADAS -->
         <div id="tab-rutas" class="tab-content">
             <div class="card-modulo">
                 <h3><i class="fa-solid fa-map-location-dot"></i> Programar Viaje (Pool)</h3>
@@ -340,9 +337,7 @@
             </div>
         </div>
 
-        <!-- =========================================
-             MÓDULO 3: REPUTACIÓN Y RESEÑAS
-             ========================================= -->
+        <!-- MÓDULO 3: REPUTACIÓN Y RESEÑAS -->
         <div id="tab-reputacion" class="tab-content">
             <div class="card-modulo">
                 <h3><i class="fa-solid fa-medal"></i> Mi Perfil Público</h3>
@@ -361,7 +356,6 @@
 
                 <h4 style="margin: 0 0 15px 0; color: var(--dark); font-size: 1.1rem;">Comentarios Recientes</h4>
                 
-                <!-- Reseñas Simuladas (Para inmersión del entorno Costa Atlántica) -->
                 <div class="resena-card">
                     <div class="resena-header">
                         <strong>Camila F.</strong>
@@ -389,9 +383,6 @@
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, doc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // ==========================================
-        // CONFIGURACIÓN FIREBASE
-        // ==========================================
         const firebaseConfig = { 
             apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", 
             authDomain: "bepy-salud-mascota.firebaseapp.com", 
@@ -405,9 +396,6 @@
         let datosUsuario = null;
         let isOnline = false;
 
-        // ==========================================
-        // CONTROL DE SESIÓN Y CARGA
-        // ==========================================
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = "index.html"; 
@@ -420,7 +408,6 @@
 
         document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
 
-        // Cargar datos básicos desde la colección general (ya que no hicimos una exclusiva en el form de registro aún)
         async function cargarPerfilChofer(uid) {
             try {
                 const docRef = doc(db, "usuarios", uid);
@@ -428,7 +415,6 @@
 
                 if (docSnap.exists()) {
                     datosUsuario = docSnap.data();
-                    // Usamos el email como nombre provisorio o el nombre si lo tiene
                     document.getElementById('nombre-chofer').innerText = datosUsuario.nombre || datosUsuario.email.split('@')[0];
                 }
             } catch (error) {
@@ -436,9 +422,6 @@
             }
         }
 
-        // ==========================================
-        // UI: CONTROL DE TABS Y ESTADO
-        // ==========================================
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -473,14 +456,8 @@
             }
         };
 
-        // Apagar radar al inicio
         document.querySelectorAll('.radar-wave').forEach(w => w.style.display = 'none');
 
-        // ==========================================
-        // LÓGICA DE FIREBASE: RUTAS BepyRide
-        // ==========================================
-        
-        // 1. Escuchar Mis Rutas en Tiempo Real
         function iniciarEscuchaRutas(uid) {
             const qRutas = query(collection(db, "rutas_choferes"), where("chofer_uid", "==", uid));
             
@@ -518,7 +495,6 @@
             });
         }
 
-        // 2. Crear Nueva Ruta
         document.getElementById('btn-crear-ruta').addEventListener('click', async () => {
             const btn = document.getElementById('btn-crear-ruta');
             const origen = document.getElementById('ruta-origen').value.trim();
@@ -546,14 +522,13 @@
                     fecha: fecha,
                     hora: hora,
                     cupo_total: cupo,
-                    cupo_disponible: cupo, // Al inicio, todo el cupo está libre
+                    cupo_disponible: cupo,
                     precio: precio,
                     solidario: solidario,
                     estado: 'activa',
                     fecha_creacion: new Date()
                 });
                 
-                // Limpiar campos
                 document.getElementById('ruta-origen').value = "";
                 document.getElementById('ruta-destino').value = "";
                 document.getElementById('ruta-precio').value = "";
@@ -568,7 +543,6 @@
             }
         });
 
-        // 3. Borrar Ruta
         window.borrarRuta = async function(id) {
             if(confirm("¿Estás seguro que querés cancelar esta ruta programada?")) {
                 try {
@@ -579,16 +553,17 @@
                 }
             }
         };
-
     </script>
-        <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('sw.js')
-                        .then(reg => console.log('Motor PWA Activado', reg.scope))
-                        .catch(err => console.error('Error al iniciar PWA', err));
-                });
-            }
-        </script>
+
+    <!-- SCRIPT DE PWA / MODO OFFLINE -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Motor PWA Chofer Activado', reg.scope))
+                    .catch(err => console.error('Error PWA', err));
+            });
+        }
+    </script>
 </body>
 </html>
