@@ -6,6 +6,11 @@
     <title>Bepy | Panel de Prestador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- PWA: MODO OFFLINE E INSTALACIÓN -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="apple-touch-icon" href="icono-192.png">
+    
     <style>
         :root { 
             --primary: #0ea5e9; 
@@ -227,9 +232,6 @@
             color: var(--danger);
         }
     </style>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0ea5e9">
-    <link rel="apple-touch-icon" href="icono-192.png">
 </head>
 <body>
 
@@ -660,14 +662,16 @@
             await updateDoc(doc(db, "adopciones", id), { estado: nuevoEstado });
         };
     </script>
-        <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('sw.js')
-                        .then(reg => console.log('Motor PWA Activado', reg.scope))
-                        .catch(err => console.error('Error al iniciar PWA', err));
-                });
-            }
-        </script>
+    
+    <!-- SCRIPT DE PWA / MODO OFFLINE -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Motor PWA Prestador Activado', reg.scope))
+                    .catch(err => console.error('Error al iniciar PWA', err));
+            });
+        }
+    </script>
 </body>
 </html>
