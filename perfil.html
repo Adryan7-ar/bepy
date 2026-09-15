@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bepy | Perfil de Mascota</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #0ea5e9; --dark: #0f172a; --bg: #f8fafc; 
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+        }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); color: var(--dark); 
+            margin: 0; padding: 0; display: flex; flex-direction: column; 
+            align-items: center; min-height: 100vh;
+        }
+        .container { 
+            width: 100%; max-width: 500px; background: white; 
+            min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); 
+            position: relative;
+        }
+        
+        /* CABECERA DINÁMICA (Cambia a rojo si está perdido) */
+        .header-perfil { 
+            padding: 40px 20px 60px 20px; text-align: center; 
+            background: linear-gradient(135deg, var(--primary) 0%, #0284c7 100%); 
+            color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            transition: 0.3s;
+        }
+        .header-perfil.sos-activo {
+            background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%);
+            animation: latido 2s infinite;
+        }
+        @keyframes latido { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } }
+        
+        .logo-top { font-weight: 900; font-size: 1.2rem; margin-bottom: 20px; opacity: 0.9; }
+        .foto-mascota { 
+            width: 140px; height: 140px; border-radius: 50%; border: 5px solid white; 
+            margin: 0 auto; background: #e2e8f0; display: flex; justify-content: center; 
+            align-items: center; font-size: 4rem; color: #cbd5e1; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            object-fit: cover; overflow: hidden;
+        }
+        .foto-mascota img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .info-card { 
+            background: white; border-radius: 20px; padding: 25px; 
+            margin: -40px 20px 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            text-align: center; position: relative; z-index: 10; border: 1px solid #e2e8f0;
+        }
+        .info-card h1 { margin: 0 0 5px 0; font-size: 2.2rem; text-transform: capitalize; }
+        .info-card p { margin: 0; color: #64748b; font-size: 1.1rem; }
+        
+        .badge-estado { 
+            display: inline-block; padding: 8px 15px; border-radius: 20px; 
+            font-weight: bold; font-size: 0.9rem; margin-top: 15px; 
+        }
+        .estado-ok { background: #dcfce7; color: var(--success); }
+        .estado-sos { background: #fee2e2; color: var(--danger); border: 2px solid var(--danger); }
+        
+        /* GRILLA DE DATOS */
+        .grid-datos { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            padding: 0 20px; margin-bottom: 25px;
+        }
+        .dato-box { background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; }
+        .dato-box i { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .dato-box h4 { margin: 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
+        .dato-box p { margin: 5px 0 0 0; font-size: 1.1rem; font-weight: bold; color: var(--dark); }
+
+        /* ALERTA MÉDICA */
+        .alerta-medica {
+            background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid var(--warning);
+            padding: 15px; margin: 0 20px 25px 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px;
+        }
+
+        /* BOTONES DE ACCIÓN PUBLICOS */
+        .seccion-acciones { padding: 0 20px 40px 20px; }
+        .btn-accion { 
+            width: 100%; border: none; padding: 16px; border-radius: 16px; 
+            font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; 
+            display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px;
+        }
+        .btn-encontre { background: var(--danger); color: white; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+        .btn-encontre:hover { background: #b91c1c; }
+        .btn-veterinario { background: var(--dark); color: white; }
+        .btn-veterinario:hover { background: black; }
+
+        #pantalla-carga { 
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: white; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="pantalla-carga">
+            <i class="fa-solid fa-paw fa-bounce" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2 style="color: var(--dark);">Buscando perfil...</h2>
+            <p style="color: #64748b;">Leyendo placa Bepy</p>
+        </div>
+
+        <div id="contenido-perfil" style="display: none;">
+            <div id="header-bg" class="header-perfil">
+                <div class="logo-top"><i class="fa-solid fa-paw"></i> Bepy Global</div>
+                <div class="foto-mascota" id="perfil-foto"></div>
+            </div>
+
+            <div class="info-card">
+                <h1 id="perfil-nombre">--</h1>
+                <p id="perfil-raza">--</p>
+                <div id="perfil-estado" class="badge-estado estado-ok"><i class="fa-solid fa-shield-check"></i> Mascota a salvo</div>
+            </div>
+
+            <div id="contenedor-alerta"></div>
+
+            <div class="grid-datos">
+                <div class="dato-box">
+                    <i class="fa-solid fa-cake-candles"></i>
+                    <h4>Edad</h4>
+                    <p id="perfil-edad">--</p>
+                </div>
+                <div class="dato-box">
+                    <i class="fa-solid fa-weight-scale"></i>
+                    <h4>Peso</h4>
+                    <p id="perfil-peso">-- kg</p>
+                </div>
+                <div class="dato-box">
+                    <i class="fa-solid fa-scissors"></i>
+                    <h4>Condición</h4>
+                    <p id="perfil-reproduccion" style="text-transform: capitalize;">--</p>
+                </div>
+                <div class="dato-box">
+                    <i class="fa-solid fa-barcode"></i>
+                    <h4>ID Oficial</h4>
+                    <p id="perfil-codigo" style="color: var(--primary);">--</p>
+                </div>
+            </div>
+
+            <div class="seccion-acciones" id="acciones-publicas">
+                <!-- Se inyectan botones según el estado de la mascota -->
+            </div>
+            
+            <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 20px;">
+                <i class="fa-solid fa-lock"></i> Perfil público asegurado por Bepy
+            </p>
+        </div>
+
+    </div>
+
+    <!-- CEREBRO FIREBASE GLOBAL -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", 
+            authDomain: "bepy-salud-mascota.firebaseapp.com", 
+            projectId: "bepy-salud-mascota" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app, "bepy-data");
+
+        // 1. Leer el ID de la URL (Ej: perfil.html?id=BEPY-ABCD)
+        const urlParams = new URLSearchParams(window.location.search);
+        const codigoBepy = urlParams.get('id');
+
+        window.onload = async () => {
+            if (!codigoBepy) {
+                mostrarError("No se detectó ninguna placa Bepy válida en la URL.");
+                return;
+            }
+
+            try {
+                // 2. Buscar en la Base de Datos
+                const q = query(collection(db, "mascotas"), where("codigo_bepy", "==", codigoBepy));
+                const consulta = await getDocs(q);
+
+                if (consulta.empty) {
+                    mostrarError("El código de la chapita no está registrado en el ecosistema Bepy.");
+                    return;
+                }
+
+                // 3. Dibujar los datos
+                consulta.forEach((doc) => {
+                    dibujarPerfil(doc.data());
+                });
+
+            } catch (error) {
+                console.error(error);
+                mostrarError("Error de conexión al leer la placa.");
+            }
+        };
+
+        function dibujarPerfil(datos) {
+            document.getElementById('pantalla-carga').style.display = 'none';
+            document.getElementById('contenido-perfil').style.display = 'block';
+
+            document.getElementById('perfil-nombre').innerText = datos.nombre;
+            document.getElementById('perfil-raza').innerText = `${datos.especie} • ${datos.raza}`;
+            document.getElementById('perfil-edad').innerText = `${datos.edad} años`;
+            document.getElementById('perfil-peso').innerText = `${datos.peso} kg`;
+            document.getElementById('perfil-reproduccion').innerText = datos.reproduccion;
+            document.getElementById('perfil-codigo').innerText = datos.codigo_bepy;
+
+            // FOTO
+            const contFoto = document.getElementById('perfil-foto');
+            if (datos.fotoBase64) {
+                contFoto.innerHTML = `<img src="${datos.fotoBase64}">`;
+            } else {
+                contFoto.innerHTML = `<i class="fa-solid ${datos.especie === 'gato' ? 'fa-cat' : 'fa-dog'}"></i>`;
+            }
+
+            // ALERTA MÉDICA
+            if (datos.alerta_medica) {
+                document.getElementById('contenedor-alerta').innerHTML = `
+                    <div class="alerta-medica">
+                        <i class="fa-solid fa-notes-medical" style="font-size: 2rem; color: var(--warning);"></i>
+                        <div>
+                            <strong style="color: #b45309; font-size: 0.8rem; text-transform: uppercase;">Alerta Médica Importante</strong>
+                            <p style="margin: 0; font-weight: bold; color: var(--dark);">${datos.alerta_medica}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // LÓGICA DE ESTADO (PERDIDO VS A SALVO)
+            const header = document.getElementById('header-bg');
+            const estadoBadge = document.getElementById('perfil-estado');
+            const acciones = document.getElementById('acciones-publicas');
+
+            if (datos.estado_sos === true) {
+                // MODO EMERGENCIA ROJO
+                header.classList.add('sos-activo');
+                estadoBadge.className = "badge-estado estado-sos";
+                estadoBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> MASCOTA PERDIDA';
+                
+                // Botón para contactar al dueño
+                acciones.innerHTML = `
+                    <button class="btn-accion btn-encontre" onclick="abrirReporte()">
+                        <i class="fa-solid fa-bullhorn"></i> ¡Encontré a ${datos.nombre}!
+                    </button>
+                `;
+            } else {
+                // MODO NORMAL AZUL
+                header.classList.remove('sos-activo');
+                estadoBadge.className = "badge-estado estado-ok";
+                estadoBadge.innerHTML = '<i class="fa-solid fa-shield-cat"></i> Mascota a salvo';
+                
+                // Botones para el veterinario o curiosos
+                acciones.innerHTML = `
+                    <button class="btn-accion btn-veterinario" onclick="window.location.href='index.html'">
+                        <i class="fa-solid fa-user-doctor"></i> Soy Veterinario (Ir al Panel)
+                    </button>
+                    <button class="btn-accion" style="background: var(--bg); border: 2px solid #e2e8f0; color: var(--dark);" onclick="window.location.href='index.html'">
+                        Conseguí tu placa Bepy
+                    </button>
+                `;
+            }
+        }
+
+        window.abrirReporte = function() {
+            // Próximamente (Fase 6 - Paso 4): Acá abriremos el Chat Integrado.
+            // Por ahora, simulamos la acción.
+            alert("¡Gracias por ayudar! En la próxima actualización se abrirá el Chat Interno con el dueño de forma anónima para proteger sus datos.");
+        }
+
+        function mostrarError(mensaje) {
+            document.getElementById('pantalla-carga').innerHTML = `
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 4rem; color: var(--danger); margin-bottom: 20px;"></i>
+                <h2 style="color: var(--dark); text-align:center;">Perfil no encontrado</h2>
+                <p style="color: #64748b; text-align:center; padding: 0 20px;">${mensaje}</p>
+                <button onclick="window.location.href='index.html'" style="margin-top: 20px; background:var(--dark); color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">Ir al inicio de Bepy</button>
+            `;
+        }
+    </script>
+</body>
+</html>
