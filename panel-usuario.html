@@ -24,56 +24,26 @@
             --success: #10b981; 
             --warning: #f59e0b; 
             --danger: #ef4444; 
+            --gold: #f59e0b;
         }
         
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: var(--bg); 
-            color: var(--dark); 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        .panel-contenedor { width: 100%; max-width: 600px; padding-bottom: 50px; }
         
-        .panel-contenedor { 
-            width: 100%; 
-            max-width: 600px; 
-            padding-bottom: 50px; 
-        }
-        
-        /* CABECERA FLOTANTE Y NOTIFICACIONES */
-        .cabecera { 
-            background: rgba(255, 255, 255, 0.9); 
-            backdrop-filter: blur(10px); 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            position: sticky; 
-            top: 0; 
-            z-index: 50; 
-        }
-        
+        /* CABECERA Y NOTIFICACIONES */
+        .cabecera { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
         .cabecera h2 { margin: 0; color: var(--primary); font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
-        
         .header-actions { display: flex; align-items: center; gap: 15px; }
-        
         .campana-notif { position: relative; font-size: 1.4rem; color: #475569; cursor: pointer; transition: 0.2s; }
         .campana-notif:hover { color: var(--primary); }
         .punto-rojo-notif { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; border: 2px solid white; display: none; }
-        
         .btn-salir { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; }
         .btn-salir:hover { background: var(--danger); color: white; }
 
-        /* SECCIÓN 1: EL SANTUARIO */
+        /* SECCIÓN 1: SANTUARIO */
         .santuario-section { padding: 20px; }
-        
         .btn-nueva-mascota { width: 100%; background: var(--dark); color: white; border: none; padding: 15px; border-radius: 16px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; transition: 0.3s; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); }
         .btn-nueva-mascota:hover { transform: translateY(-3px); background: #1e293b; }
-
         #contenedor-alertas { margin-bottom: 20px; width: 100%; }
         .alerta-smart { background: white; border-left: 5px solid var(--warning); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; animation: slideDown 0.4s ease-out; }
         .alerta-smart.critica { background: #fef2f2; border-left-color: var(--danger); }
@@ -102,7 +72,6 @@
         .dato-item label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
         .dato-item span { font-size: 0.95rem; font-weight: 600; color: var(--dark); text-transform: capitalize; }
         
-        /* BOTONES PROFILÁCTICOS */
         .acciones-profilaxis { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; }
         .btn-profilaxis { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s; }
         .btn-pipeta { background: #e0f2fe; color: var(--primary-dark); }
@@ -116,7 +85,6 @@
         .btn-ver-libreta { background: var(--dark); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
         .btn-ver-libreta:hover { background: #1e293b; transform: scale(1.02); }
 
-        /* SOS CREDENCIAL */
         .credencial-sos { border: 3px solid var(--danger) !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4) !important; }
         .credencial-sos .credencial-header { background: linear-gradient(90deg, #ef4444, #b91c1c) !important; }
         .banner-perdido { background: var(--danger); color: white; text-align: center; font-weight: bold; padding: 10px; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; animation: latido 1.5s infinite; }
@@ -124,12 +92,26 @@
         .btn-sos:hover { background: var(--danger); color: white; }
         .btn-cancelar-sos { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; margin-top: 15px; cursor: pointer; }
 
-        /* SECCIÓN 2: BEPY HUB (LA SUPER APP) */
+        /* SECCIÓN 2: BEPY HUB */
         .bepy-hub { background: white; border-radius: 35px 35px 0 0; padding: 30px 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); min-height: 500px; margin-top: 10px; }
         .header-seccion { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-seccion h3 { margin: 0; font-size: 1.3rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
         .badge-localidad { background: #f1f5f9; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid #e0f2fe; }
         
+        /* BEPY HUELLAS - PROGRAMA DE LEALTAD */
+        .tarjeta-huellas { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 20px; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #334155; transition: 0.3s; }
+        .tarjeta-huellas:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(251, 191, 36, 0.2); border-color: var(--gold); }
+        .huellas-info h4 { margin: 0 0 5px 0; font-size: 1.2rem; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+        .huellas-info p { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+        .huellas-saldo { font-size: 2.2rem; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.4); }
+
+        .premio-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .premio-info h4 { margin: 0 0 5px 0; color: var(--dark); font-size: 1rem; }
+        .premio-info p { margin: 0; color: #64748b; font-size: 0.8rem; }
+        .btn-canjear { background: var(--gold); color: var(--dark); border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3); }
+        .btn-canjear:hover { background: #f59e0b; color: white; }
+        .btn-canjear:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
         .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
         .action-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px 5px; cursor: pointer; transition: 0.2s; text-align: center; gap: 8px; }
         .action-btn:hover { background: #e0f2fe; border-color: var(--primary); transform: translateY(-3px); }
@@ -138,7 +120,6 @@
 
         .carrusel-horizontal { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory; }
         .carrusel-horizontal::-webkit-scrollbar { height: 0; } 
-        
         .card-comercio { min-width: 240px; background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; scroll-snap-align: start; flex-shrink: 0; }
         .card-comercio h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 1.1rem; text-transform: capitalize; }
         .card-comercio p { margin: 0; color: #64748b; font-size: 0.85rem; text-transform: capitalize; }
@@ -168,7 +149,6 @@
         .modal-content { background: white; padding: 25px; border-radius: 24px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto; }
         .btn-cerrar-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
         
-        /* Modales Especiales */
         .tarjeta-reserva { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; position: relative; }
         .tarjeta-reserva h4 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--dark); }
         .tarjeta-reserva p { margin: 0 0 10px 0; font-size: 0.85rem; color: #475569; }
@@ -251,6 +231,17 @@
                 <span id="txt-localidad" class="badge-localidad"><i class="fa-solid fa-spinner fa-spin"></i></span>
             </div>
 
+            <!-- BILLETERA BEPY HUELLAS -->
+            <div class="tarjeta-huellas" onclick="abrirModalPremios()">
+                <div class="huellas-info">
+                    <h4><i class="fa-solid fa-paw" style="color:var(--gold);"></i> Bepy Huellas</h4>
+                    <p>Tus puntos acumulados</p>
+                </div>
+                <div class="huellas-saldo">
+                    <span id="saldo-huellas"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                </div>
+            </div>
+
             <!-- Botonera de Acciones Rápidas -->
             <div class="quick-actions">
                 <div class="action-btn" onclick="abrirModalReservas('turnos')">
@@ -267,22 +258,55 @@
                 </div>
             </div>
 
-            <!-- Carrusel Comercios -->
             <h4 style="margin: 0 0 10px 0; font-size: 1rem; color: var(--dark);"><i class="fa-solid fa-tags" style="color: var(--warning);"></i> Comercios y Beneficios</h4>
             <div id="carrusel-comercios" class="carrusel-horizontal"></div>
 
-            <!-- Muro Social / Feed Bepy -->
             <h4 style="margin: 25px 0 10px 0; font-size: 1rem; color: var(--dark);"><i class="fa-solid fa-bullhorn" style="color: #a855f7;"></i> Experiencias de la Comunidad</h4>
             <div id="muro-experiencias" class="muro-social"></div>
 
-            <!-- Carrusel Adopciones -->
             <h4 style="margin: 25px 0 10px 0; font-size: 1rem; color: var(--dark);"><i class="fa-solid fa-heart" style="color: #db2777;"></i> Red de Adopción</h4>
             <div id="carrusel-adopciones" class="carrusel-horizontal"></div>
         </div>
 
     </div>
 
-    <!-- MODAL DE NOTIFICACIONES (FASE 6) -->
+    <!-- MODAL: CATÁLOGO DE PREMIOS BEPY HUELLAS -->
+    <div id="modal-premios" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-cerrar-modal" onclick="document.getElementById('modal-premios').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top:0; color:var(--dark);"><i class="fa-solid fa-gift" style="color:var(--gold);"></i> Catálogo de Recompensas</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Canjeá tus Bepy Huellas por descuentos en la red de comercios y servicios.</p>
+            
+            <div class="premio-item">
+                <div class="premio-info">
+                    <h4>15% OFF en Pet Shop</h4>
+                    <p>Válido en alimentos y accesorios.</p>
+                    <span style="color:var(--gold); font-weight:bold; font-size:0.8rem;"><i class="fa-solid fa-paw"></i> 300 Huellas</span>
+                </div>
+                <button class="btn-canjear" data-costo="300" onclick="canjearPremio(300, '15% OFF en Pet Shop')">Canjear</button>
+            </div>
+
+            <div class="premio-item">
+                <div class="premio-info">
+                    <h4>Baño Canino Gratis</h4>
+                    <p>En peluquerías adheridas.</p>
+                    <span style="color:var(--gold); font-weight:bold; font-size:0.8rem;"><i class="fa-solid fa-paw"></i> 800 Huellas</span>
+                </div>
+                <button class="btn-canjear" data-costo="800" onclick="canjearPremio(800, 'Baño Canino Gratis')">Canjear</button>
+            </div>
+
+            <div class="premio-item">
+                <div class="premio-info">
+                    <h4>Viaje BepyRide con 50% OFF</h4>
+                    <p>Aplica para traslados locales.</p>
+                    <span style="color:var(--gold); font-weight:bold; font-size:0.8rem;"><i class="fa-solid fa-paw"></i> 500 Huellas</span>
+                </div>
+                <button class="btn-canjear" data-costo="500" onclick="canjearPremio(500, '50% OFF en BepyRide')">Canjear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOTIFICACIONES -->
     <div id="modal-notificaciones" class="modal-overlay">
         <div class="modal-content">
             <button class="btn-cerrar-modal" onclick="document.getElementById('modal-notificaciones').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
@@ -292,7 +316,7 @@
         </div>
     </div>
 
-    <!-- MODALES DE TRANSACCIONES (FASE 5) -->
+    <!-- MODALES DE TRANSACCIONES -->
     <div id="modal-reservas-turnos" class="modal-overlay">
         <div class="modal-content">
             <button class="btn-cerrar-modal" onclick="document.getElementById('modal-reservas-turnos').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
@@ -427,7 +451,7 @@
         </div>
     </div>
 
-    <!-- CONTENEDOR OFF-SCREEN PDF (Se mantiene igual) -->
+    <!-- CONTENEDOR OFF-SCREEN PDF -->
     <div id="contenedor-plantilla">
         <div id="plantilla-pdf">
             <div class="pdf-header"><h1 class="pdf-title">BEPY GLOBAL</h1><p class="pdf-subtitle">CERTIFICADO SANITARIO OFICIAL UNIFICADO • REPÚBLICA ARGENTINA</p></div>
@@ -485,9 +509,8 @@
         let datosMascotaAbierta = null; 
         let vacunasParaPDF = [];
         let listaMisMascotasNombres = []; 
-        
-        // FASE 6: Centro de Notificaciones
         let notificacionesPendientes = [];
+        let misHuellas = 0; // FASE 6: Variable de Gamificación
 
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = "index.html"; } 
@@ -495,17 +518,65 @@
                 usuarioActual = user; 
                 cargarMisMascotas(); 
                 cargarDatosZonalesYAdopciones(user.uid);
+                escucharMisHuellas(); // Activamos el escuchador de puntos
             }
         });
 
         document.getElementById('btn-salir').addEventListener('click', () => { signOut(auth); });
 
         // ==========================================
+        // FASE 6: GAMIFICACIÓN BEPY HUELLAS
+        // ==========================================
+        function escucharMisHuellas() {
+            onSnapshot(doc(db, "usuarios", usuarioActual.uid), (docSnap) => {
+                if(docSnap.exists()){
+                    let data = docSnap.data();
+                    misHuellas = data.bepy_huellas || 0;
+                    document.getElementById('saldo-huellas').innerText = misHuellas;
+                    actualizarBotonesCanje();
+                }
+            });
+        }
+
+        window.abrirModalPremios = function() {
+            document.getElementById('modal-premios').style.display = 'flex';
+            actualizarBotonesCanje();
+        }
+
+        window.canjearPremio = async function(costo, premioNombre) {
+            if(misHuellas >= costo) {
+                if(confirm(`¿Estás seguro de canjear ${costo} Huellas por: ${premioNombre}?`)) {
+                    try {
+                        await updateDoc(doc(db, "usuarios", usuarioActual.uid), {
+                            bepy_huellas: misHuellas - costo
+                        });
+                        
+                        const codigoDesc = "BEPY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+                        alert(`¡Canje exitoso! 🎉\n\nTu código de premio es: ${codigoDesc}\n\nPresentalo en el comercio adherido para usar tu beneficio.`);
+                        document.getElementById('modal-premios').style.display = 'none';
+                    } catch(e) { alert("Hubo un error al canjear el premio."); }
+                }
+            } else { alert("Te faltan Huellas para canjear este premio. ¡Registrá los cuidados de tu mascota para sumar más!"); }
+        }
+
+        window.actualizarBotonesCanje = function() {
+            document.querySelectorAll('.btn-canjear').forEach(btn => {
+                let costo = parseInt(btn.getAttribute('data-costo'));
+                if(misHuellas >= costo) {
+                    btn.disabled = false;
+                    btn.innerText = "Canjear Premio";
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = `Faltan ${costo - misHuellas} pts`;
+                }
+            });
+        }
+
+        // ==========================================
         // FASE 6: MOTOR PROFILÁCTICO Y NOTIFICACIONES
         // ==========================================
         window.abrirBandejaNotificaciones = function() {
             document.getElementById('modal-notificaciones').style.display = 'flex';
-            // Al abrir, "leemos" las notificaciones apagando la campanita roja
             document.getElementById('badge-notif').style.display = 'none';
         };
 
@@ -515,14 +586,9 @@
             
             panel.innerHTML = "";
             if (notificacionesPendientes.length > 0) {
-                badge.style.display = 'block'; // Encender campanita roja
+                badge.style.display = 'block'; 
                 notificacionesPendientes.forEach(n => {
-                    panel.innerHTML += `
-                        <div style="background:#f8fafc; border-left:4px solid ${n.color}; padding:15px; margin-bottom:10px; border-radius:10px;">
-                            <h4 style="margin:0 0 5px 0; color:var(--dark);"><i class="fa-solid ${n.icono}" style="color:${n.color};"></i> ${n.titulo}</h4>
-                            <p style="margin:0; font-size:0.85rem; color:#475569;">${n.texto}</p>
-                        </div>
-                    `;
+                    panel.innerHTML += `<div style="background:#f8fafc; border-left:4px solid ${n.color}; padding:15px; margin-bottom:10px; border-radius:10px;"><h4 style="margin:0 0 5px 0; color:var(--dark);"><i class="fa-solid ${n.icono}" style="color:${n.color};"></i> ${n.titulo}</h4><p style="margin:0; font-size:0.85rem; color:#475569;">${n.texto}</p></div>`;
                 });
             } else {
                 badge.style.display = 'none';
@@ -538,16 +604,19 @@
                 
                 try {
                     await addDoc(collection(db, "profilaxis_usuario"), {
-                        mascota_id: idMascota,
-                        tipo: tipo,
+                        mascota_id: idMascota, tipo: tipo,
                         fecha_aplicacion: hoy.toISOString().split('T')[0],
                         fecha_vencimiento: vencimiento.toISOString().split('T')[0]
                     });
-                    alert(`¡${tipo} registrada! Te recordaremos la próxima dosis.`);
-                    cargarMisMascotas(); // Recargar para actualizar los motores matemáticos
-                } catch(e) {
-                    console.error("Error", e);
-                }
+                    
+                    // GAMIFICACIÓN: SUMAMOS 50 PUNTOS AL USUARIO
+                    await updateDoc(doc(db, "usuarios", usuarioActual.uid), {
+                        bepy_huellas: misHuellas + 50
+                    });
+
+                    alert(`¡${tipo} registrada! Sumaste 50 Bepy Huellas y te recordaremos la próxima dosis.`);
+                    cargarMisMascotas(); 
+                } catch(e) { console.error("Error", e); }
             }
         };
 
@@ -557,15 +626,10 @@
                 const res = await getDocs(q);
                 res.forEach(doc => {
                     const c = doc.data();
-                    notificacionesPendientes.push({
-                        titulo: '¡Presupuesto Recibido!',
-                        texto: `Un profesional respondió tu consulta de ${c.servicio} para ${c.mascota}. Valor ofrecido: ${c.precio_ofrecido}`,
-                        icono: 'fa-file-invoice-dollar',
-                        color: 'var(--success)'
-                    });
+                    notificacionesPendientes.push({ titulo: '¡Presupuesto Recibido!', texto: `Un profesional respondió tu consulta de ${c.servicio} para ${c.mascota}. Valor ofrecido: ${c.precio_ofrecido}`, icono: 'fa-file-invoice-dollar', color: 'var(--success)' });
                 });
                 renderizarNotificaciones();
-            } catch(e) { console.error("Error cotizaciones", e); }
+            } catch(e) { console.error(e); }
         }
 
         // ==========================================
@@ -576,7 +640,7 @@
             const contAlertas = document.getElementById('contenedor-alertas');
             contAlertas.innerHTML = ""; 
             listaMisMascotasNombres = [];
-            notificacionesPendientes = []; // Reiniciamos bandeja de notificaciones
+            notificacionesPendientes = []; 
 
             try {
                 const q = query(collection(db, "mascotas"), where("dueño_uid", "==", usuarioActual.uid));
@@ -601,10 +665,8 @@
                     let mascotaEnRiesgo = false;
 
                     if (!estaPerdida) {
-                        // 1. CHEQUEO DE VACUNAS
                         const qVac = query(collection(db, "vacunas"), where("mascota_id", "==", idMascota));
                         const resVac = await getDocs(qVac);
-                        
                         resVac.forEach(vacDoc => {
                             const vac = vacDoc.data();
                             const fVenc = new Date(vac.fecha_vencimiento + 'T12:00:00');
@@ -620,15 +682,12 @@
                             }
                         });
 
-                        // 2. CHEQUEO PROFILÁCTICO (PIPETAS / DESPARASITANTES)
                         const qProf = query(collection(db, "profilaxis_usuario"), where("mascota_id", "==", idMascota));
                         const resProf = await getDocs(qProf);
-                        let ultimasProf = {}; // Agrupamos para obtener solo la última aplicada de cada tipo
+                        let ultimasProf = {}; 
                         resProf.forEach(pDoc => {
                             let d = pDoc.data();
-                            if(!ultimasProf[d.tipo] || new Date(d.fecha_aplicacion) > new Date(ultimasProf[d.tipo].fecha_aplicacion)) {
-                                ultimasProf[d.tipo] = d;
-                            }
+                            if(!ultimasProf[d.tipo] || new Date(d.fecha_aplicacion) > new Date(ultimasProf[d.tipo].fecha_aplicacion)) { ultimasProf[d.tipo] = d; }
                         });
                         Object.values(ultimasProf).forEach(prof => {
                             const fVencP = new Date(prof.fecha_vencimiento + 'T12:00:00');
@@ -641,7 +700,6 @@
                         });
                     }
 
-                    // DIBUJADO DE CREDENCIAL
                     const visualFoto = datos.fotoBase64 ? `<img src="${datos.fotoBase64}">` : `<i class="fa-solid ${datos.especie === 'gato' ? 'fa-cat' : 'fa-dog'}"></i>`;
                     const datosString = encodeURIComponent(JSON.stringify(datos)); 
                     
@@ -699,12 +757,9 @@
                     `;
                     contenedor.innerHTML += tarjetaHTML;
                     
-                    setTimeout(() => { 
-                        new QRCode(document.getElementById(`qr-${datos.codigo_bepy}`), { text: datos.codigo_bepy, width: 50, height: 50, colorDark : "#0f172a", colorLight : "#ffffff" }); 
-                    }, 100);
+                    setTimeout(() => { new QRCode(document.getElementById(`qr-${datos.codigo_bepy}`), { text: datos.codigo_bepy, width: 50, height: 50, colorDark : "#0f172a", colorLight : "#ffffff" }); }, 100);
                 }
                 
-                // Finalizando la carga, revisamos Cotizaciones y Renderizamos la Campanita
                 await revisarCotizacionesRespondidas();
                 
             } catch (error) { console.error("Error al cargar mascotas:", error); }
@@ -721,20 +776,12 @@
                 try {
                     const q = query(collection(db, "turnos_prestador"), where("estado", "==", "activo"));
                     const snapshot = await getDocs(q);
-                    lista.innerHTML = "";
-                    let hay = false;
+                    lista.innerHTML = ""; let hay = false;
                     snapshot.forEach(docSnap => {
                         const t = docSnap.data();
                         if(t.reservas_actuales < t.cupo_maximo) {
                             hay = true;
-                            lista.innerHTML += `
-                                <div class="tarjeta-reserva">
-                                    <span class="badge-precio">$${t.precio}</span>
-                                    <h4>${t.servicio}</h4>
-                                    <p><i class="fa-solid fa-store"></i> ${t.comercio_nombre} (${t.localidad})</p>
-                                    <p><i class="fa-regular fa-calendar"></i> ${t.fecha} a las ${t.hora}hs</p>
-                                    <button class="btn-accion-reserva" onclick="window.confirmarReservaTurno('${docSnap.id}', ${t.reservas_actuales}, '${t.link_pago}')">Reservar y Pagar</button>
-                                </div>`;
+                            lista.innerHTML += `<div class="tarjeta-reserva"><span class="badge-precio">$${t.precio}</span><h4>${t.servicio}</h4><p><i class="fa-solid fa-store"></i> ${t.comercio_nombre} (${t.localidad})</p><p><i class="fa-regular fa-calendar"></i> ${t.fecha} a las ${t.hora}hs</p><button class="btn-accion-reserva" onclick="window.confirmarReservaTurno('${docSnap.id}', ${t.reservas_actuales}, '${t.link_pago}')">Reservar y Pagar</button></div>`;
                         }
                     });
                     if(!hay) lista.innerHTML = '<p style="text-align:center; color:#64748b;">No hay turnos con cupo disponible.</p>';
@@ -746,21 +793,12 @@
                 try {
                     const q = query(collection(db, "rutas_choferes"), where("estado", "==", "activa"));
                     const snapshot = await getDocs(q);
-                    lista.innerHTML = "";
-                    let hay = false;
+                    lista.innerHTML = ""; let hay = false;
                     snapshot.forEach(docSnap => {
                         const r = docSnap.data();
                         if(r.cupo_disponible > 0) {
                             hay = true;
-                            lista.innerHTML += `
-                                <div class="tarjeta-reserva" style="border-left: 4px solid #8b5cf6;">
-                                    <span class="badge-precio" style="color:white; background:#8b5cf6;">$${r.precio} p/Lugar</span>
-                                    <h4>${r.origen} <i class="fa-solid fa-arrow-right" style="font-size:0.8rem; color:#94a3b8;"></i> ${r.destino}</h4>
-                                    <p><i class="fa-solid fa-user"></i> Chofer: ${r.chofer_nombre}</p>
-                                    <p><i class="fa-regular fa-calendar"></i> ${r.fecha} - ${r.hora}hs</p>
-                                    <p style="color:#8b5cf6; font-weight:bold;">${r.cupo_disponible} Lugares Disponibles</p>
-                                    <button class="btn-accion-reserva btn-ride" onclick="window.confirmarReservaRuta('${docSnap.id}', ${r.cupo_disponible})">Reservar 1 Lugar</button>
-                                </div>`;
+                            lista.innerHTML += `<div class="tarjeta-reserva" style="border-left: 4px solid #8b5cf6;"><span class="badge-precio" style="color:white; background:#8b5cf6;">$${r.precio} p/Lugar</span><h4>${r.origen} <i class="fa-solid fa-arrow-right" style="font-size:0.8rem; color:#94a3b8;"></i> ${r.destino}</h4><p><i class="fa-solid fa-user"></i> Chofer: ${r.chofer_nombre}</p><p><i class="fa-regular fa-calendar"></i> ${r.fecha} - ${r.hora}hs</p><p style="color:#8b5cf6; font-weight:bold;">${r.cupo_disponible} Lugares Disponibles</p><button class="btn-accion-reserva btn-ride" onclick="window.confirmarReservaRuta('${docSnap.id}', ${r.cupo_disponible})">Reservar 1 Lugar</button></div>`;
                         }
                     });
                     if(!hay) lista.innerHTML = '<p style="text-align:center; color:#64748b;">No hay viajes programados con lugar.</p>';
