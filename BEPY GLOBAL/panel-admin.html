@@ -572,7 +572,7 @@
             // Inicializar Leaflet si no existe y centrar en La Costa
             setTimeout(() => {
                 if(!miMapa) {
-                    miMapa = L.map('mapa-admin').setView([-36.5414, -56.7214], 9); 
+                    miMapa = L.map('mapa-admin').setView([-36.5414, -56.7214], 10); 
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(miMapa);
                     markerGroup = L.layerGroup().addTo(miMapa);
                 } else { miMapa.invalidateSize(); }
