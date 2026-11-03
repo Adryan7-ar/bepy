@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BepyRide | Panel de Conductor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --primary: #0ea5e9; 
+            --primary-dark: #0284c7; 
+            --dark: #0f172a; 
+            --panel: #1e293b; 
+            --bg-light: #f1f5f9;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bepyride: #8b5cf6;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg-light); 
+            color: var(--dark); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        
+        .panel-contenedor { 
+            width: 100%; 
+            max-width: 800px; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            padding-bottom: 50px;
+        }
+        
+        /* CABECERA BEPYRIDE */
+        .cabecera { 
+            background: white; 
+            padding: 20px 25px; 
+            border-radius: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 25px; 
+            border-left: 5px solid var(--bepyride);
+        }
+        
+        .cabecera-info h2 { 
+            margin: 0; 
+            color: var(--dark); 
+            font-size: 1.6rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .badge-chofer {
+            background: #f3e8ff;
+            color: var(--bepyride);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* TOGGLE ESTADO ONLINE/OFFLINE */
+        .estado-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .estado-toggle.online {
+            background: #dcfce7;
+            color: var(--success);
+            border-color: #bbf7d0;
+        }
+        .punto-estado {
+            width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; transition: 0.3s;
+        }
+        .estado-toggle.online .punto-estado {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+        
+        .btn-salir { 
+            background: transparent; 
+            color: var(--danger); 
+            border: 1px solid var(--danger); 
+            padding: 8px 15px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.2s; 
+            margin-left: 15px;
+        }
+        .btn-salir:hover { background: var(--danger); color: white; }
+
+        /* TABS DE NAVEGACIÓN */
+        .tabs { 
+            display: flex; 
+            background: white; 
+            border-radius: 16px; 
+            padding: 8px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        
+        .tab-btn { 
+            flex: 1; 
+            padding: 15px 20px; 
+            text-align: center; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: #64748b; 
+            transition: 0.3s; 
+        }
+        
+        .tab-btn.active { 
+            background: var(--bg-light); 
+            color: var(--bepyride); 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FORMULARIOS Y TARJETAS */
+        .card-modulo {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-modulo h3 {
+            margin: 0 0 20px 0;
+            color: var(--dark);
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .grid-form { grid-template-columns: 1fr; } }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: bold; color: #475569; }
+        .input-form { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; outline: none; transition: 0.2s; }
+        .input-form:focus { border-color: var(--bepyride); }
+
+        .btn-accion { 
+            width: 100%; 
+            background: var(--bepyride); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-accion:hover { background: #7c3aed; transform: translateY(-2px); }
+
+        /* EFECTO RADAR (Pestaña 1) */
+        .radar-container {
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #0f172a;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .radar-text { color: white; font-weight: bold; z-index: 10; margin-top: 20px; font-size: 1.1rem; }
+        .radar-circle {
+            width: 50px; height: 50px; background: var(--bepyride); border-radius: 50%; position: absolute;
+            display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5rem; z-index: 10;
+        }
+        .radar-wave {
+            position: absolute; width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(139, 92, 246, 0.4); animation: onda 2s infinite ease-out;
+        }
+        @keyframes onda { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(6); opacity: 0; } }
+
+        /* LISTADO DE RUTAS */
+        .item-ruta {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--bepyride);
+        }
+        .item-info h4 { margin: 0 0 5px 0; color: var(--dark); font-size: 1.1rem; }
+        .item-info p { margin: 0; color: #64748b; font-size: 0.85rem; line-height: 1.4; }
+        .item-stats { text-align: right; }
+        .badge-cupo { background: #e0e7ff; color: var(--bepyride); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; }
+
+        /* MURO DE REPUTACIÓN */
+        .stats-reputacion {
+            display: flex; gap: 15px; margin-bottom: 25px;
+        }
+        .stat-box {
+            flex: 1; background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 20px; text-align: center;
+        }
+        .stat-box h2 { margin: 0; font-size: 2.5rem; color: var(--warning); }
+        .stat-box p { margin: 5px 0 0 0; font-size: 0.9rem; color: #b45309; font-weight: bold; text-transform: uppercase; }
+
+        .resena-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px;
+        }
+        .resena-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .estrellas { color: var(--warning); font-size: 0.9rem; }
+        .resena-texto { color: #475569; font-size: 0.95rem; font-style: italic; margin: 0; }
+        .badge-solidario { display: inline-flex; align-items: center; gap: 5px; background: #fdf2f8; color: #db2777; padding: 5px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; margin-top: 10px; }
+    </style>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="apple-touch-icon" href="icono-192.png">
+</head>
+<body>
+
+    <div class="panel-contenedor">
+        
+        <!-- CABECERA CHOFER -->
+        <div class="cabecera">
+            <div class="cabecera-info">
+                <h2><i class="fa-solid fa-car-side" style="color: var(--bepyride);"></i> BepyRide</h2>
+                <p>Chofer: <span id="nombre-chofer" style="font-weight: bold; color:var(--dark);">Cargando...</span> <span class="badge-chofer">Verificado</span></p>
+            </div>
+            
+            <div style="display: flex; align-items: center;">
+                <div id="btn-estado" class="estado-toggle" onclick="toggleEstado()">
+                    <div class="punto-estado"></div> <span id="txt-estado">Fuera de línea</span>
+                </div>
+                <button id="btn-salir" class="btn-salir"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <div class="tab-btn active" onclick="switchTab('radar')"><i class="fa-solid fa-satellite-dish"></i> Radar Express</div>
+            <div class="tab-btn" onclick="switchTab('rutas')"><i class="fa-solid fa-route"></i> Mis Rutas (Pool)</div>
+            <div class="tab-btn" onclick="switchTab('reputacion')"><i class="fa-solid fa-star"></i> Reputación</div>
+        </div>
+
+        <!-- MÓDULO 1: RADAR DE VIAJES EXPRESS -->
+        <div id="tab-radar" class="tab-content active">
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-location-crosshairs"></i> Solicitudes Inmediatas</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Ponete "En Línea" desde el botón superior para empezar a recibir viajes de emergencia o traslados rápidos en tu zona.</p>
+                
+                <div class="radar-container" id="radar-animacion">
+                    <div class="radar-wave"></div>
+                    <div class="radar-wave" style="animation-delay: 0.5s;"></div>
+                    <div class="radar-circle"><i class="fa-solid fa-car"></i></div>
+                    <div class="radar-text" id="radar-mensaje">Desconectado. No recibirás viajes.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO 2: RUTAS PROGRAMADAS -->
+        <div id="tab-rutas" class="tab-content">
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-map-location-dot"></i> Programar Viaje (Pool)</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom: 20px;">Publicá tu recorrido con anticipación. Los dueños podrán reservar caniles/asientos y viajar a menor costo.</p>
+                
+                <div class="grid-form">
+                    <div class="input-group">
+                        <label>Origen (Ciudad / Barrio)</label>
+                        <input type="text" id="ruta-origen" class="input-form" placeholder="Ej: Santa Teresita">
+                    </div>
+                    <div class="input-group">
+                        <label>Destino (Ciudad / Barrio)</label>
+                        <input type="text" id="ruta-destino" class="input-form" placeholder="Ej: Mar Azul">
+                    </div>
+                    <div class="input-group">
+                        <label>Fecha de Salida</label>
+                        <input type="date" id="ruta-fecha" class="input-form">
+                    </div>
+                    <div class="input-group">
+                        <label>Hora Estimada</label>
+                        <input type="time" id="ruta-hora" class="input-form">
+                    </div>
+                    <div class="input-group">
+                        <label>Lugares / Caniles Disponibles</label>
+                        <input type="number" id="ruta-cupo" class="input-form" min="1" value="2">
+                    </div>
+                    <div class="input-group">
+                        <label>Precio por lugar ($)</label>
+                        <input type="number" id="ruta-precio" class="input-form" placeholder="Ej: 8000">
+                    </div>
+                </div>
+
+                <div style="background: #fdf2f8; border: 1px dashed #fbcfe8; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: bold; color: #db2777; cursor: pointer;">
+                        <input type="checkbox" id="ruta-solidaria" style="width: 18px; height: 18px;">
+                        Marcar como Viaje Solidario (Llevo rescatados de Refugios Gratis)
+                    </label>
+                    <p style="margin: 5px 0 0 30px; font-size: 0.8rem; color: #64748b;">Ganá la insignia "Héroe Bepy" para mejorar tu reputación en la plataforma.</p>
+                </div>
+
+                <button id="btn-crear-ruta" class="btn-accion"><i class="fa-solid fa-paper-plane"></i> Publicar Ruta</button>
+            </div>
+            
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-list-ul"></i> Mis Rutas Publicadas</h3>
+                <div id="lista-rutas">
+                    <p style="text-align:center; color:#94a3b8;"><i class="fa-solid fa-circle-notch fa-spin"></i> Cargando rutas...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO 3: REPUTACIÓN Y RESEÑAS -->
+        <div id="tab-reputacion" class="tab-content">
+            <div class="card-modulo">
+                <h3><i class="fa-solid fa-medal"></i> Mi Perfil Público</h3>
+                
+                <div class="stats-reputacion">
+                    <div class="stat-box">
+                        <h2>4.9</h2>
+                        <div class="estrellas"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div>
+                        <p>Calificación Global</p>
+                    </div>
+                    <div class="stat-box" style="background: #f0fdf4; border-color: #86efac;">
+                        <h2 style="color: var(--success);"><i class="fa-solid fa-shield-cat"></i></h2>
+                        <p style="color: #047857;">Manejo Seguro Verificado</p>
+                    </div>
+                </div>
+
+                <h4 style="margin: 0 0 15px 0; color: var(--dark); font-size: 1.1rem;">Comentarios Recientes</h4>
+                
+                <div class="resena-card">
+                    <div class="resena-header">
+                        <strong>Camila F.</strong>
+                        <div class="estrellas"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                    <p class="resena-texto">"Excelente conductor. Viajamos de San Bernardo a Pinamar y manejó con muchísimo cuidado. Hizo una parada para que Milo baje al pasto. ¡Súper recomendable!"</p>
+                </div>
+
+                <div class="resena-card">
+                    <div class="resena-header">
+                        <strong>Refugio Mar Azul</strong>
+                        <div class="estrellas"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                    <p class="resena-texto">"Nos ayudó a trasladar a dos cachorros rescatados hacia Santa Teresita sin cobrarnos un peso. ¡Un héroe total de la comunidad Bepy!"</p>
+                    <div class="badge-solidario"><i class="fa-solid fa-hand-holding-heart"></i> Viaje Solidario Confirmado</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CEREBRO FIREBASE GLOBAL -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, doc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBoTDAAebxyRcg0-qneHllYHC7IE-wI68Y", 
+            authDomain: "bepy-salud-mascota.firebaseapp.com", 
+            projectId: "bepy-salud-mascota" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app, "bepy-data");
+
+        let usuarioActual = null;
+        let datosUsuario = null;
+        let isOnline = false;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "index.html"; 
+            } else { 
+                usuarioActual = user; 
+                await cargarPerfilChofer(user.uid);
+                iniciarEscuchaRutas(user.uid);
+            }
+        });
+
+        document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
+
+        async function cargarPerfilChofer(uid) {
+            try {
+                const docRef = doc(db, "usuarios", uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    datosUsuario = docSnap.data();
+                    document.getElementById('nombre-chofer').innerText = datosUsuario.nombre || datosUsuario.email.split('@')[0];
+                }
+            } catch (error) {
+                console.error("Error obteniendo datos del chofer:", error);
+            }
+        }
+
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            const btns = document.querySelectorAll('.tab-btn');
+            if(tab === 'radar') btns[0].classList.add('active');
+            else if(tab === 'rutas') btns[1].classList.add('active');
+            else if(tab === 'reputacion') btns[2].classList.add('active');
+
+            document.getElementById('tab-' + tab).classList.add('active');
+        };
+
+        window.toggleEstado = function() {
+            isOnline = !isOnline;
+            const btn = document.getElementById('btn-estado');
+            const txt = document.getElementById('txt-estado');
+            const radarTxt = document.getElementById('radar-mensaje');
+            const waves = document.querySelectorAll('.radar-wave');
+
+            if (isOnline) {
+                btn.classList.add('online');
+                txt.innerText = "En Línea";
+                radarTxt.innerText = "Buscando pasajeros cerca de tu ubicación...";
+                radarTxt.style.color = "var(--success)";
+                waves.forEach(w => w.style.display = 'block');
+            } else {
+                btn.classList.remove('online');
+                txt.innerText = "Fuera de línea";
+                radarTxt.innerText = "Desconectado. No recibirás viajes.";
+                radarTxt.style.color = "white";
+                waves.forEach(w => w.style.display = 'none');
+            }
+        };
+
+        document.querySelectorAll('.radar-wave').forEach(w => w.style.display = 'none');
+
+        function iniciarEscuchaRutas(uid) {
+            const qRutas = query(collection(db, "rutas_choferes"), where("chofer_uid", "==", uid));
+            
+            onSnapshot(qRutas, (snapshot) => {
+                const lista = document.getElementById('lista-rutas');
+                lista.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    lista.innerHTML = `<p style="text-align:center; color:#94a3b8;">No tenés viajes programados.</p>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const r = doc.data();
+                    const id = doc.id;
+                    const esSolidario = r.solidario ? `<span style="color:#db2777; font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-heart"></i> Solidario</span>` : '';
+
+                    lista.innerHTML += `
+                        <div class="item-ruta">
+                            <div class="item-info">
+                                <h4>${r.origen} <i class="fa-solid fa-arrow-right" style="font-size:0.8rem; color:#94a3b8; margin:0 5px;"></i> ${r.destino}</h4>
+                                <p><i class="fa-regular fa-calendar"></i> ${r.fecha} a las ${r.hora}hs</p>
+                                <p><i class="fa-solid fa-money-bill"></i> Precio: $${r.precio} por lugar</p>
+                                ${esSolidario}
+                            </div>
+                            <div class="item-stats">
+                                <span class="badge-cupo">${r.cupo_disponible} Lugares Libres</span><br>
+                                <button onclick="window.borrarRuta('${id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem; margin-top:5px; text-decoration:underline;">Cancelar Ruta</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }, (error) => {
+                console.error("Error al escuchar rutas:", error);
+            });
+        }
+
+        document.getElementById('btn-crear-ruta').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-crear-ruta');
+            const origen = document.getElementById('ruta-origen').value.trim();
+            const destino = document.getElementById('ruta-destino').value.trim();
+            const fecha = document.getElementById('ruta-fecha').value;
+            const hora = document.getElementById('ruta-hora').value;
+            const cupo = parseInt(document.getElementById('ruta-cupo').value);
+            const precio = parseInt(document.getElementById('ruta-precio').value);
+            const solidario = document.getElementById('ruta-solidaria').checked;
+
+            if(!origen || !destino || !fecha || !hora || !precio) {
+                alert("Por favor completá Origen, Destino, Fecha, Hora y Precio.");
+                return;
+            }
+
+            btn.disabled = true; 
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Publicando...";
+
+            try {
+                await addDoc(collection(db, "rutas_choferes"), {
+                    chofer_uid: usuarioActual.uid,
+                    chofer_nombre: document.getElementById('nombre-chofer').innerText,
+                    origen: origen,
+                    destino: destino,
+                    fecha: fecha,
+                    hora: hora,
+                    cupo_total: cupo,
+                    cupo_disponible: cupo,
+                    precio: precio,
+                    solidario: solidario,
+                    estado: 'activa',
+                    fecha_creacion: new Date()
+                });
+                
+                document.getElementById('ruta-origen').value = "";
+                document.getElementById('ruta-destino').value = "";
+                document.getElementById('ruta-precio').value = "";
+                document.getElementById('ruta-solidaria').checked = false;
+                
+            } catch(error) {
+                console.error("Error al crear ruta:", error);
+                alert("Hubo un error al publicar la ruta.");
+            } finally {
+                btn.disabled = false; 
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Publicar Ruta`;
+            }
+        });
+
+        window.borrarRuta = async function(id) {
+            if(confirm("¿Estás seguro que querés cancelar esta ruta programada?")) {
+                try {
+                    await deleteDoc(doc(db, "rutas_choferes", id));
+                } catch(error) {
+                    console.error("Error al borrar ruta:", error);
+                    alert("Error al intentar eliminar.");
+                }
+            }
+        };
+    </script>
+
+    <!-- SCRIPT DE PWA / MODO OFFLINE -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Motor PWA Chofer Activado', reg.scope))
+                    .catch(err => console.error('Error PWA', err));
+            });
+        }
+    </script>
+</body>
+</html>
