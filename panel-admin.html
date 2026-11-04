@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin CEO - Bepy Global</title>
     
     <!-- PWA: MODO OFFLINE E INSTALACIÓN -->
@@ -32,14 +32,22 @@
             --crm: #f43f5e; 
         }
         
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body { 
             font-family: 'Segoe UI', system-ui, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text); 
             padding: 20px; 
-            margin: 0; 
             display: flex; 
             justify-content: center; 
+            box-sizing: border-box;
         }
         
         .dashboard { 
@@ -366,55 +374,39 @@
     document.getElementById('btn-salir').addEventListener('click', () => signOut(auth));
 
     function iniciarEscuchaEnTiempoReal() {
-        // Escucha a la colección Usuarios
         onSnapshot(collection(db, "usuarios"), (snapshot) => {
             listaUsuarios = [];
             let cUsuarios = 0; let cProfesionales = 0; let cPrestadores = 0;
-
             snapshot.forEach((doc) => {
                 const data = doc.data(); data.id = doc.id; listaUsuarios.push(data);
                 if (data.rol === "usuario") cUsuarios++;
                 else if (data.rol === "profesional") cProfesionales++;
                 else if (data.rol === "prestador") cPrestadores++;
             });
-
             document.getElementById('count-usuarios').innerText = cUsuarios;
             document.getElementById('count-profesionales').innerText = cProfesionales;
             document.getElementById('count-prestadores').innerText = cPrestadores;
-            
             document.getElementById('msj-carga').innerHTML = '<i class="fa-solid fa-satellite-dish"></i> En vivo';
-            
             if (['usuario', 'profesional', 'prestador'].includes(filtroActualRol)) { dibujarTabla(); }
             if (filtroActualRol === 'mapa') { dibujarPinesEnMapa(); }
         }, (error) => { console.error("Error en tiempo real:", error); });
 
-        // Escucha a la colección Adopciones
         onSnapshot(collection(db, "adopciones"), (snapshot) => {
             listaAdopciones = [];
             snapshot.forEach(doc => { const d = doc.data(); d.id = doc.id; listaAdopciones.push(d); });
             document.getElementById('count-adopciones').innerText = snapshot.size;
-            
-            // Lógica del Badge Azul para Adopciones
             document.getElementById('dot-adopciones').style.display = snapshot.size > 0 ? 'block' : 'none';
-
             if(filtroActualRol === 'adopciones') dibujarTablaAdopciones();
         });
 
-        // Escucha a Alertas SOS para el Badge Rojo y el Mapa
         onSnapshot(query(collection(db, "alertas_sos"), where("estado", "==", "Activa")), (snapshot) => {
             listaSOS = [];
             snapshot.forEach(doc => { listaSOS.push(doc.data()); });
-            
-            // Lógica del Badge Rojo para SOS
             document.getElementById('dot-mapa').style.display = snapshot.size > 0 ? 'block' : 'none';
-            
             if(filtroActualRol === 'mapa') dibujarPinesEnMapa(); 
         });
     }
 
-    // ==========================================
-    // SISTEMA DE RUTEO Y RENDERIZADO DE MÓDULOS
-    // ==========================================
     window.aplicarFiltroPrincipal = async function(filtro) {
         filtroActualRol = filtro; filtroActualPlan = 'todos'; 
         document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('activa'));
@@ -428,9 +420,6 @@
         contMapa.style.display = 'none'; menuPlanes.style.display = 'none';
         if (chartInstancia) chartInstancia.destroy();
 
-        // ----------------------------------------------------
-        // MÓDULOS DEL "NIVEL 3": CRM, KYC, TICKETS
-        // ----------------------------------------------------
         if (filtro === 'kyc') {
             subtitulo.innerHTML = '<i class="fa-solid fa-id-card-clip"></i> Centro de Validación Profesional (KYC)';
             contContenido.innerHTML = `
@@ -479,9 +468,6 @@
             return;
         }
 
-        // ----------------------------------------------------
-        // MÓDULOS DE "NIVEL 4": GOBIERNO, PDF Y AUDITORÍA
-        // ----------------------------------------------------
         if (filtro === 'equipo') {
             subtitulo.innerHTML = '<i class="fa-solid fa-id-badge"></i> Accesos y Permisos (Directorio)';
             contContenido.innerHTML = `
@@ -562,14 +548,10 @@
             return;
         }
 
-        // ----------------------------------------------------
-        // MÓDULOS DE "NIVEL 1 y 2": MAPA, IOT, TABLAS BASE
-        // ----------------------------------------------------
         if (filtro === 'mapa') { 
             subtitulo.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Radar Bepy de Emergencias y Logística'; 
             contMapa.style.display = 'block'; contContenido.innerHTML = "";
             
-            // Inicializar Leaflet si no existe y centrar en La Costa
             setTimeout(() => {
                 if(!miMapa) {
                     miMapa = L.map('mapa-admin').setView([-36.5414, -56.7214], 10); 
@@ -592,7 +574,6 @@
             return;
         }
 
-        // TABLAS BASE DE USUARIOS (CRUD con Firebase)
         contContenido.innerHTML = `<table id="tabla-datos"><thead id="tabla-head"></thead><tbody id="tabla-body"></tbody></table>`;
         if (filtro === 'usuario') { subtitulo.innerHTML = '<i class="fa-solid fa-users"></i> Base de Datos: Dueños Registrados'; menuPlanes.style.display = 'flex'; } 
         else if (filtro === 'profesional') { subtitulo.innerHTML = '<i class="fa-solid fa-user-doctor"></i> Base de Datos: Red Veterinaria'; } 
@@ -600,35 +581,25 @@
         dibujarTabla();
     }
 
-    // ==========================================
-    // DIBUJAR PINES EN EL MAPA REAL
-    // ==========================================
     function dibujarPinesEnMapa() {
         if(!markerGroup) return;
         markerGroup.clearLayers(); 
 
-        // Usuarios y Vetes (Azules)
         listaUsuarios.forEach(u => {
             if(u.lat && u.lng) {
                 const iconoUsuario = L.divIcon({ html: '<i class="fa-solid fa-user" style="color:#38bdf8; font-size:1.5rem; text-shadow: 0 0 10px rgba(56,189,248,0.8);"></i>', className: 'dummy', iconSize: [20, 20] });
-                L.marker([u.lat, u.lng], {icon: iconoUsuario}).addTo(markerGroup)
-                 .bindPopup(`<b>${u.rol.toUpperCase()}</b><br>${u.email}<br>Localidad: ${u.localidad}`);
+                L.marker([u.lat, u.lng], {icon: iconoUsuario}).addTo(markerGroup).bindPopup(`<b>${u.rol.toUpperCase()}</b><br>${u.email}<br>Localidad: ${u.localidad}`);
             }
         });
 
-        // S.O.S (Rojos Titilantes)
         listaSOS.forEach(sos => {
             if(sos.lat && sos.lng) {
                 const iconoSOS = L.divIcon({ html: '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444; font-size:2.2rem; animation: latido 1s infinite; text-shadow: 0 0 15px rgba(239,68,68,1);"></i>', className: 'dummy', iconSize: [35, 35] });
-                L.marker([sos.lat, sos.lng], {icon: iconoSOS}).addTo(markerGroup)
-                 .bindPopup(`<b style="color:red; font-size:1.2rem;">¡ALERTA SOS ACTIVA!</b><br>Mascota: <b>${sos.mascota_nombre}</b><br>Reportado en: ${sos.ubicacion}`).openPopup();
+                L.marker([sos.lat, sos.lng], {icon: iconoSOS}).addTo(markerGroup).bindPopup(`<b style="color:red; font-size:1.2rem;">¡ALERTA SOS ACTIVA!</b><br>Mascota: <b>${sos.mascota_nombre}</b><br>Reportado en: ${sos.ubicacion}`).openPopup();
             }
         });
     }
 
-    // ==========================================
-    // DIBUJAR TABLA DE ADOPCIONES
-    // ==========================================
     window.dibujarTablaAdopciones = function() {
         const thead = document.getElementById('tabla-head'); const tbody = document.getElementById('tabla-body');
         thead.innerHTML = `<tr><th>Nombre del Animal</th><th>Refugio a Cargo</th><th>Estado en el Sistema</th><th>Fecha de Publicación</th></tr>`;
@@ -643,9 +614,6 @@
         });
     }
 
-    // ==========================================
-    // DIBUJAR USUARIOS Y EDICIÓN (CRUD FIREBASE)
-    // ==========================================
     window.filtrarPorPlan = function(plan) {
         filtroActualPlan = plan;
         document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('activo'));
@@ -669,7 +637,6 @@
         });
     }
 
-    // Modal y Borrado de Firebase
     window.borrarUsuario = async function(id, email) { 
         if(confirm(`ATENCIÓN: Está a punto de ejecutar un comando destructivo.\n¿Desea eliminar permanentemente a [ ${email} ] de la base de datos global?`)) { 
             try { await deleteDoc(doc(db, "usuarios", id)); } 
@@ -699,9 +666,6 @@
         } 
     });
 
-    // ==========================================
-    // EXPORTACIÓN PDF Y BÚSQUEDA FORENSE
-    // ==========================================
     window.filtrarAuditoria = function() {
         const texto = document.getElementById('filtro-texto').value.toLowerCase();
         const rol = document.getElementById('filtro-rol').value.toLowerCase();
