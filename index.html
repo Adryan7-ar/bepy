@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Bepy | El Ecosistema de Bienestar Animal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -27,13 +27,18 @@
             --gold: #f59e0b;
         }
         
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+        }
+
         body { 
             font-family: 'Segoe UI', system-ui, sans-serif; 
             background: var(--bg-light);
             color: var(--dark); 
             margin: 0; 
             padding: 0;
-            overflow-x: hidden;
             scroll-behavior: smooth;
         }
 
@@ -115,7 +120,7 @@
         .faq-item.active { border-color: var(--primary); box-shadow: 0 10px 20px rgba(14, 165, 233, 0.1); }
         
         .faq-answer { padding: 0 25px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; color: #475569; line-height: 1.6; font-size: 0.95rem; }
-        .faq-item.active .faq-answer { padding: 0 25px 20px 25px; max-height: 300px; } /* Muestra la respuesta */
+        .faq-item.active .faq-answer { padding: 0 25px 20px 25px; max-height: 300px; } 
 
         /* =========================================
            ESTILOS ORIGINALES DEL FORMULARIO (MODAL)
@@ -160,7 +165,6 @@
         .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; display: none; }
         .loader-overlay i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
         
-        /* Footer Sencillo */
         footer { background: var(--dark); color: #94a3b8; text-align: center; padding: 30px 20px; font-size: 0.9rem; }
     </style>
 </head>
@@ -256,7 +260,6 @@
         </div>
         
         <div class="faq-container">
-            <!-- FAQ 1 -->
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
                     ¿Qué es la Credencial Bepy y tiene algún costo? <i class="fa-solid fa-chevron-down"></i>
@@ -265,7 +268,6 @@
                     Es una billetera sanitaria digital totalmente gratuita para los dueños. Te permite llevar el historial médico de tu mascota siempre en el celular, recibir alertas inteligentes cuando una vacuna está por vencer y acceder a una red de beneficios en comercios de tu zona.
                 </div>
             </div>
-            <!-- FAQ 2 -->
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
                     ¿Cómo funciona el botón S.O.S de mascotas perdidas? <i class="fa-solid fa-chevron-down"></i>
@@ -274,7 +276,6 @@
                     Ante una emergencia, podés activar la "Alerta S.O.S" desde tu panel. El sistema geolocaliza a tu mascota en el mapa central y envía una notificación roja inmediata al radar de todos los usuarios, veterinarias y comercios adheridos de tu ciudad para ayudar en la búsqueda.
                 </div>
             </div>
-            <!-- FAQ 3 -->
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
                     ¿Puedo usar la plataforma si me voy de vacaciones? <i class="fa-solid fa-chevron-down"></i>
@@ -283,7 +284,6 @@
                     ¡Por supuesto! El ecosistema Bepy es global. Si viajás (por ejemplo, a la Costa Atlántica), la plataforma actualiza tu ubicación y te conecta automáticamente con las veterinarias de guardia, refugios y pet shops que se encuentren disponibles en tu ciudad de destino.
                 </div>
             </div>
-            <!-- FAQ 4 -->
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
                     ¿Cómo valido las vacunas de mi mascota en la app? <i class="fa-solid fa-chevron-down"></i>
@@ -292,7 +292,6 @@
                     Bepy reemplaza la libreta de papel por un sistema legal. Cuando vas al veterinario, el profesional (previamente validado con su matrícula en nuestra plataforma) escanea el código QR de tu credencial y registra la vacuna, aplicando su firma y sello digital inalterable.
                 </div>
             </div>
-            <!-- FAQ 5 -->
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
                     ¿Puedo reservar turnos o pedir traslados desde Bepy? <i class="fa-solid fa-chevron-down"></i>
@@ -399,30 +398,32 @@
 
     <script type="module">
         // ==========================================
-        // LÓGICA DEL MAPA HERO
+        // LÓGICA DEL MAPA HERO (LA COSTA ATLÁNTICA)
         // ==========================================
+        // Acá centramos el mapa en Santa Teresita / Mar del Tuyú con zoom 10
         const mapaHero = L.map('mapa-hero', { zoomControl: false, attributionControl: false }).setView([-36.5414, -56.7214], 10); 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaHero);
         
         const iconNormal = L.divIcon({ html: '<i class="fa-solid fa-location-dot" style="color:#0ea5e9; font-size:1.5rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));"></i>', className: 'dummy', iconSize: [20, 20] });
         const iconSOS = L.divIcon({ html: '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444; font-size:1.8rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); animation: latido 1.5s infinite;"></i>', className: 'dummy', iconSize: [25, 25] });
         
-        L.marker([-36.5414, -56.7214], {icon: iconNormal}).addTo(mapaHero); 
-        L.marker([-37.3333, -57.0333], {icon: iconSOS}).addTo(mapaHero); 
-        L.marker([-36.6833, -56.6833], {icon: iconNormal}).addTo(mapaHero);
+        // Ponemos un pin normal en Las Toninas
+        L.marker([-36.4833, -56.6975], {icon: iconNormal}).addTo(mapaHero); 
+        // Ponemos el SOS en San Bernardo
+        L.marker([-36.6833, -56.6833], {icon: iconSOS}).addTo(mapaHero); 
+        // Ponemos un pin normal en Mar de Ajó
+        L.marker([-36.7167, -56.6667], {icon: iconNormal}).addTo(mapaHero);
 
         // ==========================================
         // LÓGICA FAQ (ACORDEÓN)
         // ==========================================
         window.toggleFaq = function(element) {
             const item = element.parentElement;
-            // Si queremos que al abrir una se cierren las demás, descomentar la siguiente línea:
-            // document.querySelectorAll('.faq-item').forEach(faq => { if (faq !== item) faq.classList.remove('active'); });
             item.classList.toggle('active');
         };
 
         // ==========================================
-        // LÓGICA DE INTERFAZ DEL MODAL (TU CÓDIGO)
+        // LÓGICA DE INTERFAZ DEL MODAL
         // ==========================================
         window.abrirAuthModal = function(tab) {
             document.getElementById('auth-modal-overlay').classList.add('active');
@@ -474,7 +475,7 @@
                 const docSnap = await getDoc(doc(db, "usuarios", userCredential.user.uid));
                 if (docSnap.exists()) {
                     const rol = docSnap.data().rol;
-                    if (rol === 'admin') window.location.href = "admin-panel.html";
+                    if (rol === 'admin') window.location.href = "panel-admin.html";
                     else if (rol === 'profesional') window.location.href = "panel-profesional.html";
                     else if (rol === 'prestador') window.location.href = "panel-prestador.html";
                     else window.location.href = "panel-usuario.html"; 
