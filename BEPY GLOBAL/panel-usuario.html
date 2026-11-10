@@ -24,12 +24,18 @@
             --gold: #f59e0b;
         }
 
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
             color: var(--dark);
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -504,6 +510,54 @@
             font-size: 0.85rem;
             font-weight: bold;
             border: 1px solid #e0f2fe;
+        }
+        
+        /* ESTILOS DEL MÓDULO CLIMA */
+        .tarjeta-clima {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            border-left: 5px solid #cbd5e1; /* Color por defecto */
+            transition: 0.3s;
+        }
+        
+        .clima-verde { border-left-color: var(--success); }
+        .clima-amarillo { border-left-color: var(--warning); }
+        .clima-rojo { border-left-color: var(--danger); }
+
+        .clima-icono {
+            font-size: 2rem;
+            color: var(--primary);
+            width: 45px;
+            text-align: center;
+        }
+
+        .clima-info h4 {
+            margin: 0 0 3px 0;
+            font-size: 1.1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clima-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .clima-temp {
+            margin-left: auto;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
         }
 
         .tarjeta-huellas {
@@ -1327,6 +1381,18 @@
                 <h3><i class="fa-solid fa-compass" style="color: var(--primary);"></i> Explora tu zona</h3>
                 <span id="txt-localidad" class="badge-localidad"><i class="fa-solid fa-spinner fa-spin"></i></span>
             </div>
+            
+            <!-- NUEVO MÓDULO: SEMÁFORO DE PASEOS (CLIMA) -->
+            <div class="tarjeta-clima" id="panel-clima">
+                <div class="clima-icono" id="clima-icono">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+                <div class="clima-info">
+                    <h4 id="clima-titulo">Consultando clima...</h4>
+                    <p id="clima-mensaje">Sincronizando datos meteorológicos</p>
+                </div>
+                <div class="clima-temp" id="clima-temp">--°C</div>
+            </div>
 
             <!-- BILLETERA BEPY HUELLAS -->
             <div class="tarjeta-huellas" onclick="abrirModalPremios()">
@@ -1733,8 +1799,71 @@
                 cargarDatosZonalesYAdopciones(user.uid);
                 escucharMisHuellas();
                 iniciarEscuchaChats(); // INICIAMOS EL MOTOR DE MENSAJERÍA
+                cargarClimaBepy(); // INICIAMOS EL MOTOR DE CLIMA
             }
         });
+        
+        // ==========================================
+        // MÓDULO: SEMÁFORO DE CLIMA Y PASEOS
+        // ==========================================
+        async function cargarClimaBepy() {
+            const panelClima = document.getElementById('panel-clima');
+            const icono = document.getElementById('clima-icono');
+            const titulo = document.getElementById('clima-titulo');
+            const mensaje = document.getElementById('clima-mensaje');
+            const tempBox = document.getElementById('clima-temp');
+
+            try {
+                // Conectamos a la API abierta de Open-Meteo usando las coordenadas de Santa Teresita
+                const lat = -36.5414;
+                const lon = -56.7214;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,is_day,precipitation,weather_code&timezone=America%2FSao_Paulo`;
+                
+                const respuesta = await fetch(url);
+                const datos = await respuesta.json();
+                
+                const temp = Math.round(datos.current.temperature_2m);
+                const lloviendo = datos.current.precipitation > 0;
+                const deNoche = datos.current.is_day === 0;
+                
+                tempBox.innerText = `${temp}°C`;
+
+                // Lógica del Semáforo (Verde, Amarillo, Rojo)
+                if (lloviendo) {
+                    panelClima.className = 'tarjeta-clima clima-rojo';
+                    icono.innerHTML = '<i class="fa-solid fa-cloud-showers-heavy"></i>';
+                    titulo.innerHTML = 'Día de Lluvia <i class="fa-solid fa-umbrella"></i>';
+                    mensaje.innerText = 'Paseos solo si son necesarios. ¡Secale bien las patitas al volver!';
+                } else if (temp >= 30) {
+                    panelClima.className = 'tarjeta-clima clima-rojo';
+                    icono.innerHTML = '<i class="fa-solid fa-temperature-arrow-up"></i>';
+                    titulo.innerHTML = '¡Alerta Calor! <i class="fa-solid fa-fire"></i>';
+                    mensaje.innerText = 'Peligro de asfalto caliente. Evitá los paseos al sol y llevale mucha agua.';
+                } else if (temp <= 10) {
+                    panelClima.className = 'tarjeta-clima clima-amarillo';
+                    icono.innerHTML = '<i class="fa-solid fa-temperature-arrow-down"></i>';
+                    titulo.innerHTML = 'Día Frío <i class="fa-solid fa-snowflake"></i>';
+                    mensaje.innerText = 'Ideal para un paseo corto y abrigado.';
+                } else if (deNoche) {
+                    panelClima.className = 'tarjeta-clima clima-verde';
+                    icono.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                    titulo.innerHTML = 'Noche Fresca <i class="fa-solid fa-star"></i>';
+                    mensaje.innerText = 'Clima agradable. Asegurate de pasear por zonas bien iluminadas.';
+                } else {
+                    panelClima.className = 'tarjeta-clima clima-verde';
+                    icono.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                    titulo.innerHTML = 'Clima Ideal <i class="fa-solid fa-leaf"></i>';
+                    mensaje.innerText = '¡Hermoso día para salir a dar una vuelta larga o ir a la plaza!';
+                }
+
+            } catch (error) {
+                // Si la API falla, mostramos un estado neutral
+                console.error("Error al cargar el clima", error);
+                icono.innerHTML = '<i class="fa-solid fa-cloud"></i>';
+                titulo.innerHTML = 'Clima Local';
+                mensaje.innerText = 'Disfrutá del paseo con precaución.';
+            }
+        }
 
         document.getElementById('btn-salir').addEventListener('click', () => { signOut(auth); });
 
